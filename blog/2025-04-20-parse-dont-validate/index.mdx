@@ -15,7 +15,7 @@ Avec l'arrivée du jdk 17 et notamment des sealed class et des record, java nous
 L'approche "parse, don't validate" propose de créer des types riches pour représenter les données plutôt que d'utiliser les types primitifs comme String, Boolean etc et ainsi rendre impossible les états incohérents.
 Dans le cas d'une API, une fois le payload d'une requête parsé, c'est le compilateur qui reprend la main et valide le code pour vous.
 
-Dans cet article je vous propose, de suivre cette pratique en java et de voir ou ça nous mène.
+Dans cet article je vous propose, de suivre cette pratique en java et de voir où ça nous mène.
 
 ## L'approche classique
 
@@ -58,7 +58,7 @@ public Mono<ResponseEntity<Colis>> prendreEnChargeLeColis(@RequestBody @Valid Co
 
 Ici, on peut déjà remarquer que
 1. Il est facile de se tromper en instanciant l'objet colis. Ex inverser `dateDEnvoi` et `dateReception`.
-2. Les validations conditionnelles ne sont pas simple à faire. Ex valider que la date de reception est non null lorsque le type de colis a la valeur `ColisRecu`.
+2. Les validations conditionnelles ne sont pas simples à faire. Ex valider que la date de reception est non null lorsque le type de colis a la valeur `ColisRecu`.
 3. On peut avoir des états incohérents. Ex `TypeColis.EnCours` avec une `dateReception` renseignée.
 4. Niveau de confiance faible sur le fait qu'une instance de pojo soit valide ou non. Elle ne sera valide que si l'instance est passée par le controller.
 
@@ -107,14 +107,14 @@ sealed interface Vehicule permits Vehicule.Voiture, Vehicule.Scooter, Vehicule.B
 ```
 
 Le mot clé `sealed` indique que l'interface ne peut être implémentée que par une liste finie de classes ou de records. La liste est déclarée avec le mot clé `permits`.
-Dans l'illustation proposée, on pourrait enlever le mot clé `permits` puisque la liste des implémentations est dans le même fichier.
+Dans l'illustration proposée, on pourrait enlever le mot clé `permits` puisque la liste des implémentations est dans le même fichier.
 
 ### Avoir des types précis
 
 Comme exprimé plus tôt, la validation fonctionne mais n'apporte pas un fort niveau de confiance.
-Plutôt que de valider des types primitifs, pourquoi ne pas créer des types dédiés pour représenter précisement les notions manipulées dans le code.
+Plutôt que de valider des types primitifs, pourquoi ne pas créer des types dédiés pour représenter précisément les notions manipulées dans le code.
 
-à la place de
+à la place de :
 
 ```java
 class MonPojo {
@@ -124,12 +124,13 @@ class MonPojo {
 }
 ```
 
-On pourrait avoir
+On pourrait avoir :
+
 ```java
 record MonPojo(Email email) { }
 ```
 
-avec
+avec :
 
 ```java
 record Email(String value) {
@@ -225,14 +226,14 @@ var texte = switch(colis) {
 }; 
 ```
 
-Si un `case` est oublié, il y aura une erreur de compilation.
+Si un `case` est oubliée, il y aura une erreur de compilation.
 
 
 ## Parse don't validate
 
-Maintenant qu'on a des classes qui représentent nos états et nos données de façon stricte, comment passe-t-on d'un monde http / json unsafe au monde ADT safe. Et bien en écrivant des parsers.
+Maintenant qu'on a des classes qui représentent nos états et nos données de façon stricte, comment passe-t-on d'un monde http / json unsafe au monde ADT safe? Et bien en écrivant des parsers.
 
-Dans la solution proposée, la lib [`functional-json`](https://github.com/maif/functional-json) est utilisée. Dans cette approche on parse chaque attribue du json dans le bon format. La librairie permet d'empiler toutes les erreurs rencontrées lors de la lecture d'un objet.
+Dans la solution proposée, la lib [`functional-json`](https://github.com/maif/functional-json) est utilisée. Dans cette approche on parse chaque attribut du json dans le bon format. La librairie permet d'empiler toutes les erreurs rencontrées lors de la lecture d'un objet.
 
 Par exemple ici, on définit un reader et writer pour créer une instance de `ColisPrisEnCharge` :
 ```java
@@ -261,3 +262,5 @@ Dans notre base de code on a donc 2 zones :
     * accès à la base de données
 
 L'approche "parse don't validate" est un bon complément de l'architecture hexagonale.
+
+
