@@ -6,8 +6,8 @@ import Link from "@docusaurus/Link";
 const FeatureList = [
   {
     title: 'Recettes',
-    Img: '/img/ramen5.png',
-    Link: '/docs/intro',
+    Img: 'img/ramen5.png',
+    Link: 'docs/intro',
     description: (
       <>
         Le cauchemar en cuisine
@@ -16,8 +16,8 @@ const FeatureList = [
   },
   {
     title: 'Article tech',
-    Img: '/img/dev4.png',
-    Link: '/blog',
+    Img: 'img/dev4.png',
+    Link: 'blog',
     description: (
       <>
         Blog tech sur java, postgresql etc

@@ -9,7 +9,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const orga = 'larousso'
-const repo = 'blog'
+const repo = 'blabla'
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
