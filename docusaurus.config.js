@@ -81,19 +81,19 @@ const config = {
         playgroundPosition: 'bottom',
       },
       // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
+      image: 'img/avatar_1745215678410.png',
       navbar: {
         title: 'La vie en roux',
         logo: {
           alt: 'Larousso',
-          src: 'img/logo.svg',
+          src: 'img/avatar_1745215678410.png',
         },
         items: [
           {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Recette',
           },
           {to: '/blog', label: 'Blog', position: 'left'},
           {
