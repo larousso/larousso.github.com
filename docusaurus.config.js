@@ -107,7 +107,7 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'Docs',
+            title: 'Recette',
             items: [
               {
                 label: 'Tutorial',
@@ -128,7 +128,7 @@ const config = {
             title: 'More',
             items: [
               {
-                label: 'Blog',
+                label: 'Blog tech',
                 to: '/blog',
               },
               {
