@@ -8,3 +8,8 @@ java:
   label: Java
   permalink: /java
   description: Java
+
+devflow:
+  label: Dev flow
+  permalink: /devflow
+  description: Flow de dev
