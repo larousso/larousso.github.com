@@ -5,12 +5,16 @@ authors: [adelegue]
 tags: [devflow]
 ---
 
-# Trunk base sous steroids et kanban
+# Trunk base et kanban
 
 À la MAIF, le flow de dév le plus communément appliqué, c'est du gitflow et du srcum.
-Personnellement, j'ai du mal à comprendre le gitflow et je ne comprends pas à quoi sert la branche develop du moins pour le développement d'application.
+Personnellement, j'ai du mal à comprendre le gitflow et je ne comprends pas à quoi sert la branche develop du moins pour le développement d'application. Les branches support ne sont pas utiles car, on ne maintient qu'une version de notre application à un moment donné.
+
+En ce qui concerne le scrum, je trouve que ça génère une pression continue, on est toujours en train de se prendre la tête sur les story pour savoir si ça rentre ou non dans le sprint. C'est pas très chill comme méthode.
 
 Depuis quelques années sur notre projet, nous avons mis en place un flow un peu atypique à base de trunk base. C'est ce que je vais vous présenter ici.
+
+{/* truncate */}
 
 ## Le commencement
 
@@ -21,6 +25,8 @@ Mais le projet grossit, l'équipe aussi, le nombre de features développées en 
 
 Le contexte du projet, c'est un API qui gère des données de personnes. Ces données étaient initialement stockées dans un progiciel et nous cherchons à rapatrier ces données au fur et à mesure dans notre API.
 Pour ça nous avons 2 briques basées sur kafka qui vont synchroniser en presque temps réél du progiciel vers notre API ou de notre API vers le progiciel.
+
+//TODO un schéma
 
 Il est très difficile de tester correctement lors de la phase de dév les briques de synchronisation, car le progiciel (et ses API) sont pleins de surprises.
 
@@ -99,6 +105,8 @@ gitGraph:
     merge feature/jira-2
     checkout main
     merge release/2.1.0
+    commit tag:"v2.1.0"
+    commit id: "Version 2.2.0-SNAPSHOT"
     branch release/2.2.0
     checkout release/2.2.0
     branch feature/jira-3
@@ -113,17 +121,22 @@ gitGraph:
     merge feature/jira-4
     checkout main
     merge release/2.2.0
+    commit tag:"v2.2.0"
+    commit id: "Version 2.3.0-SNAPSHOT"
     commit
 ```
 
 ### Organisation de l'équipe
 
-Tous les lundis, on fait le point sur les features qui ont été développées et testées et qui sont prêtes à partir.
+Tous les lundis, on fait le point sur les features qui ont été développées et testées et qui sont prêtes à partir. Si on a rien, bah on verra plus tard hein !
 Si on a des choses à livrer, le mardi, on fait le dernier tour de tests et on prépare la release finale.
 
 Le mercredi on livre en prod et c'est reparti pour un tour.
 
-Comme indiqué plus tôt, les tests automatisés présents dans nos livrables ne suffisent pas. Notre testeur à également une batterie de test automatisés qui s'appuient sur un environnement de QA, ça fait un bon filet de sécurité en plus.
+Comme indiqué plus tôt, les tests automatisés présents dans nos livrables ne suffisent pas car, on ne maitrise pas le format des données qui proviennent du progiciel.
+Notre testeur à également une batterie de test automatisés qui s'appuient sur un environnement de QA, ça fait un bon filet de sécurité en plus.
+
+Si on résume, on pratique un mix de kanban et de scrum avec une itération d'une semaine et un trunk base qui est un mix de trunk base et de gitflow.
 
 ### Gestion des hotfix
 
@@ -132,7 +145,11 @@ Pour gérer un hotfix, on peut tout simplement tirer une branche à partir du tr
 ## Et maintenant ?
 
 Après discussion avec l'équipe, on a identifié quelques petites pierres dans l'engrenage :
-* on génère beaucoup d'aller retour entre le testeur et les dév pour déployer la bonne version à tester
+* on génère beaucoup d'aller-retour entre le testeur et les dév pour déployer la bonne version à tester
 * si on monte en prod une version vérolée, le tronc devient KO et ça peut poser des problèmes pour la suite et empêcher de futures mises en prod.
 
+Pour limiter les aller-retour entre les dév et les tests, l'idée serait de rendre autonome le testeur sur le déploiement des versions.
 
+Pour ne pas pourrir le tronc avec une version livrée à tort en production, on pourrait merger la branche de release qu'une fois la mise en prod faite et validée.
+
+That all folks, To be continued !
