@@ -8,14 +8,14 @@ tags: [prog-fonctionnelle, java]
 
 # Parse don't validate
 
-Dans les langages fonctionnels tel que java ou haskell, il est d'usage d'utiliser au maximum le compilateur pour éviter le plus tôt possible les bugs.
+Dans les langages fonctionnels tels que java ou haskell, il est d'usage d'utiliser au maximum le compilateur pour éviter le plus tôt possible les bugs.
 
 Avec l'arrivée du jdk 17 et notamment des sealed class et des record, java nous propose de nouvelles fonctionnalités pour utiliser encore plus le système de type et donc le compilateur.
 
 L'approche "parse, don't validate" propose de créer des types riches pour représenter les données plutôt que d'utiliser les types primitifs comme String, Boolean etc et ainsi rendre impossible les états incohérents.
 Dans le cas d'une API, une fois le payload d'une requête parsé, c'est le compilateur qui reprend la main et valide le code pour vous.
 
-Dans cet article je vous propose, de suivre cette pratique en java et de voir où ça nous mène.
+Dans cet article, je vous propose, de suivre cette pratique en java et de voir où ça nous mène.
 
 ## L'approche classique
 
@@ -265,5 +265,7 @@ L'approche "parse don't validate" est un bon complément de l'architecture hexag
 
 ## En conclusion
 
-L'approche "parse don't validate" rend le code bien plus robuste mais a un coût de mise en oeuvre.
-A vous de choisir à quel niveau vous voulez utilisez cette approche !
+L'approche "parse don't validate" rend le code bien plus robuste, mais elle a un coût de mise en œuvre.
+Il faudra également être vigilent lors des évolutions car il se pourrait qu'en ajoutant des contraintes supplémentaires dans son code, on ne puisse plus relire nos données stockées en base.
+
+Quoi qu'il soit, il est clair que cette approche rendra votre code moins sujet aux bugs. A vous de choisir le niveau de contraintes que vous souhaitez appliquer !
