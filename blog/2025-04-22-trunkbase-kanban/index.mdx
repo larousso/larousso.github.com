@@ -26,7 +26,30 @@ Mais le projet grossit, l'équipe aussi, le nombre de features développées en 
 Le contexte du projet, c'est un API qui gère des données de personnes. Ces données étaient initialement stockées dans un progiciel et nous cherchons à rapatrier ces données au fur et à mesure dans notre API.
 Pour ça nous avons 2 briques basées sur kafka qui vont synchroniser en presque temps réél du progiciel vers notre API ou de notre API vers le progiciel.
 
-//TODO un schéma
+```mermaid
+flowchart LR
+   Topic1@{ shape: das, label: "Topic kafka evt Progiciel" }
+   Topic2@{ shape: das, label: "Topic kafka evt API" }
+
+   progiciel["Progiciel 😱"]
+   API["API"]
+   Bridge1["Bridge"]
+   Bridge2["Bridge"]
+
+   progiciel e1@--> Topic1
+   e1@{ animate: true }
+   Topic1 e2@--> Bridge1
+   e2@{ animate: true }
+   Bridge1 e3@--> API
+   e3@{ animate: true }
+   API e4@--> Topic2
+   e4@{ animate: true }
+   Topic2 e5@--> Bridge2
+   e5@{ animate: true }
+   Bridge2 e6@--> progiciel
+   e6@{ animate: true }
+```
+
 
 Il est très difficile de tester correctement lors de la phase de dév les briques de synchronisation, car le progiciel (et ses API) sont pleins de surprises.
 
