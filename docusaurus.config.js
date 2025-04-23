@@ -42,7 +42,10 @@ const config = {
     mermaid: true,
   },
   themes: ['@docusaurus/theme-mermaid'],
-  plugins: ['@docusaurus/theme-live-codeblock'],
+  plugins: ['@docusaurus/theme-live-codeblock', [
+    "@gracefullight/docusaurus-plugin-cloudflare-analytics",
+    { token: "d3bc9ed72ee54ddca0b56513d0544baf" },
+  ]],
   presets: [
     [
       'classic',
