@@ -13,7 +13,7 @@ const repo = 'blabla'
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Blog d\'Alex',
+  title: 'Blog d\'Alex ラルーソ',
   tagline: 'La vie en roux',
   favicon: 'img/favicon.ico',
 
