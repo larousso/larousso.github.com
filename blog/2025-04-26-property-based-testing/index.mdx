@@ -5,6 +5,8 @@ authors: [adelegue]
 tags: [java, test, prog-fonctionnelle]
 ---
 
+import judgedredd from './judgedredd.png'
+
 # Property based testing en java
 
 Le "property based testing" est un type de tests souvent utilisé en programmation fonctionnelle pour valider des lois.
@@ -24,7 +26,7 @@ Voyons ce que ça peut donner en java pour tester une application spring.
 ## C'est quoi, le property based testing ?
 
 En programmation fonctionnelle, certains concepts sont validés par des lois.
-On va prendre l'exemple d'une `Monoid`, un mot barbare ,pour, parler en gros de concaténation. Une `Monoid` peut se définir ainsi :
+On va prendre l'exemple d'une `Monoid`, un mot barbare ,pour parler, en gros de concaténation (c'est aussi la base du "map reduce"). Une `Monoid` peut se définir ainsi :
 
 ```java
 interface Monoid<T> {
@@ -61,13 +63,21 @@ Ou encore
 }
 ```
 
+On pourra, ensuite utiliser ça dans un reduce (ou foldLeft) :
+
+```java
+var text = list.foldLeft(stringMonoid.empty(), stringMonoid::combine);
+```
+
 Mais ça n'est pas suffisant ! Il y a des lois à respecter !
+
+<img src={judgedredd} width="400"/>
 
 Pour que mon instance soit vraiment une `Monoid`, il faut que :
 * `combine(a, empty()) == combine(empty(), a) == a` : vérifier l'élément neutre
 * `combine(combine(a, b), c) == combine(a, combine(b, c))` : avec ça on peut paralléliser (si si je vous jure)
 
-Le problème, c'est que jouer un seul test pour vérifier ça n'est pas très probant, c'est ici, qu'entre en scène, le property based testing !
+Le problème, c'est que jouer un seul test pour vérifier ça, n'est pas très probant, c'est ici, qu'entre en scène, le property based testing !
 
 Avec jqwik, on peut écrire ça :
 
@@ -85,14 +95,14 @@ void associativityLaw(@ForAll String a, @ForAll String b, @ForAll String c) {
 
 Jqwik va alors, exécuter ces tests avec des données random un certain nombre de fois. On va alors valider que statistiquement la loi est juste.
 
+![Boring](./boring.png)
 
 Bon, j'arrête avec mes lubies de prog fonctionnelle, si on passait à du code métier et à du spring, du vrai !
 
-![Boring](./boring.png)
 
 ## Tester du code métier
 
-Pour tester du code métier il va falloir trouver comment gérer les assertions. On va devoir trouver une sorte de loi pour valider notre métier.
+Pour tester du code métier il va falloir trouver comment gérer les assertions. Il va falloir trouver une sorte de loi pour valider notre métier.
 
 Per exemple, si je veux tester la création d'une personne dans mon API, ce que je veux, c'est que :
 * la réponse ait un status http ok
@@ -107,9 +117,9 @@ et, en relisant la donnée, on va vérifier, qu'il n'y a pas de perte en route.
 Pour faire nos tests, on va utiliser [jqwik](https://jqwik.net/). Jqwik a son propre runner,
 il est parfait pour des tests unitaires, mais moins adéquat pour les tests d'intégration avec spring.
 
-A priori il existe un module spring mais il n'a pas l'air de fonctionner avec le mode `@SpringBootTest`. On va donc mixer `jqwik` et `jupiter`.
+A priori il existe un module spring mais il n'a pas l'air de bien fonctionner avec le mode `@SpringBootTest`. On va donc mixer `jqwik` et `jupiter`.
 
-Dans Jupiter, il existe les `@ParameterizedTest` qui permet d'exécuter un jeu de test paramétré. On peut utiliser ce concept pour injecter des données générées à part de `jqwik`.
+Dans Jupiter, il existe le `@ParameterizedTest` qui permet d'exécuter un jeu de test paramétré. On peut utiliser ce concept pour injecter des données générées à part de `jqwik`.
 
 On va avoir un test comme ça :
 
@@ -150,12 +160,12 @@ Dans notre cas, on veut générer des personnes, qui ont le format suivant :
 
 ```java
 @Builder
-record Person(@NotNull UUID id, Option<String> lastName, Option<String> firstName, Option<Gender> gender, List<Contact> contacts) {
+record Person(UUID id, Option<String> lastName, Option<String> firstName, Option<Gender> gender, List<Contact> contacts) {
     public Person {
-        lastName = Objects.requireNonNullElse(lastName, Option.none()).map(n -> StringUtils.upperCase(n));
-        firstName = Objects.requireNonNullElse(firstName, Option.none()).map(n -> WordUtils.capitalizeFully(n, "-", " "));
+        lastName = Objects.requireNonNullElse(lastName, Option.<String>none()).map(n -> StringUtils.upperCase(n));
+        firstName = Objects.requireNonNullElse(firstName, Option.<String>none()).map(n -> WordUtils.capitalizeFully(n, '-', ' '));
         gender = Objects.requireNonNullElse(gender, Option.none());
-        contacts = Objects.requireNonNullElse(contacts, List.empty());
+        contacts = Objects.requireNonNullElse(contacts, List.of());
     }
 }
 ```
@@ -176,7 +186,7 @@ sealed interface Contact {
 
 Aller, c'est parti, on va commencer à générer de la donnée ! `Jqwik` a un certain nombre d'utilitaires pour générer des valeurs de tout type.
 
-Pour le nom et le prénom, on va envoyer des lettre majuscules, minuscule, le tiret et l'espace
+Pour le nom et le prénom, on va envoyer des lettres majuscules, minuscule, le tiret et l'espace
 ```java
 static Arbitrary<String> lastName() {
    return Arbitraries.strings()
@@ -198,7 +208,7 @@ static Arbitrary<Gender> gender() {
 }
 ```
 
-Pour les contacts, ça être un peu plus compliqué !
+Pour les contacts, ça va être un peu plus compliqué !
 
 On commence par l'email, il existe un module pour ça :
 ```java
@@ -207,7 +217,7 @@ static Arbitrary<Contact> emailContact() {
 }
 ```
 
-Pour le téléphone, on peut choisir une autre approche afin d'avoir des téléphones plus proche de la réalité : [datafaker](https://www.datafaker.net/)
+Pour le téléphone, on peut choisir une autre approche afin d'avoir des téléphones plus proches de la réalité : [datafaker](https://www.datafaker.net/)
 ```java
 static Faker faker = new Faker(Locale.of("fr"));
 
@@ -218,7 +228,7 @@ static Arbitrary<Contact> phoneNumberContact() {
 }
 ```
 
-Pour l'adresse, on a aussi besoin de données cohérente, on va utiliser [datafaker](https://www.datafaker.net/)
+Pour l'adresse, on a aussi besoin de données cohérentes, on va utiliser [datafaker](https://www.datafaker.net/)
 
 ```java
 static Arbitrary<Contact> addressContact() {
