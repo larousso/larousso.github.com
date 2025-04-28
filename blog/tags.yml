@@ -9,6 +9,11 @@ java:
   permalink: /java
   description: Java
 
+test:
+  label: Test
+  permalink: /test
+  description: Test
+
 devflow:
   label: Dev flow
   permalink: /devflow
