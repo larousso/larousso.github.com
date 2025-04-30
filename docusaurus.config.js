@@ -110,7 +110,7 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'Recette',
+            title: 'Recettes',
             items: [
               {
                 label: 'Tutorial',
