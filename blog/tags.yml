@@ -18,3 +18,8 @@ devflow:
   label: Dev flow
   permalink: /devflow
   description: Flow de dev
+
+kafka:
+  label: Kafka
+  permalink: /kafka
+  description: Kafka
