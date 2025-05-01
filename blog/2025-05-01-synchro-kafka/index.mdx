@@ -199,10 +199,10 @@ Les erreurs "non recoverable", sont les erreurs qu'on ne pourra jamais gérer pa
 
 Une stratégie assez connue est d'utiliser une "dead letter queue", c'est une file dédiée pour stocker les erreurs et pouvoir les traiter plus tard, généralement après une action humaine.
 
-#### La gestion des erreurs à l'épreuve du feu !
+#### La gestion des erreurs a l'épreuve du feu !
 
-Même si le pattern de gestion des erreurs semble bien, en production on peut avoir des surprises !
-Faire un retry infini quand c'est une erreur "non recoverable" peut avoir des conséquences désastreuses !
+Même si le pattern de gestion des erreurs semble plutôt bien, en production on va avoir des surprises !
+Faire un retry infini quand c'est une erreur "non recoverable" peut avoir des conséquences désastreuses ! Et oui, on se ratera forcément à un moment sur la gestion des erreurs.
 
 On va tout simplement, bloquer complétement la consommation des messages sur une partition d'un topic.
 
@@ -263,9 +263,9 @@ Doit-on, router à part, les mises à jour de masse pour les traiter différemme
 La réponse : je ne sais pas !
 
 L'applicatif qu'on construit actuellement publie des messages pour chaque mise à jour de données. On est consommateur de nos propres événements mais nous ne sommes pas les seuls.
-Pour le moment, pour éviter d'impacter trop fortement les consommateurs lors de mises à jour de masses, nous avons choisi d'étaler sur de très longues périodes les reprises de données. Par exemple 50 mise à jour toutes les 3 secondes, et ce, pour 2 semaines de traitement.
+Pour le moment, pour éviter d'impacter trop fortement les consommateurs lors de mises à jour de masses, nous avons choisi d'étaler sur de très longues périodes les reprises de données.
+Par exemple 50 mise à jour toutes les 3 secondes, et ce, pour 2 semaines de traitement.
 
 ## Conclusion
 
 La consommation d'événements est faite de compromis. Ici je vous ai présenté certains problèmes rencontrés, quelques solutions mises en place, mais aussi, quelques problèmes non résolus.
-
