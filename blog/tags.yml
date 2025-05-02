@@ -23,3 +23,13 @@ kafka:
   label: Kafka
   permalink: /kafka
   description: Kafka
+
+architecture:
+  label: Architecture
+  permalink: /architecture
+  description: Architecture
+
+patterns:
+  label: Patterns
+  permalink: /patterns
+  description: Patterns
