@@ -46,8 +46,8 @@ Aucune manipulation de variable externe, donc pas d'effet de bord.
 
 ### Transparence référentielle
 
-La transparence référentielle, c'est lorsque substituer une fonction par une variable et manipuler cette variable revient à manipuler directement la fonction.
-Les fonctions pures sont référentiellement transparente.
+La transparence référentielle, c'est lorsque substituer une fonction par une variable ne change pas le comportement du programme.
+Les fonctions pures sont référentiellement transparente. Une fonction est pure si, toutes les expressions impliquées dans la fonction sont référentiellement transparente.
 
 Comme ça, ça peut paraître un peu flou, mais on va prendre un exemple.
 
@@ -280,7 +280,7 @@ Ici, c'est une méthode qui retourne une fonction, c'est presque de la curryfica
 
 ## Vavr
 
-Vavr est une librairie java très utile pour faire du fonctionnel en java. Vavr est un portage d'une partie du SDK du langage scala.
+[Vavr](https://vavr.io/) est une librairie java très utile pour faire du fonctionnel en java. Vavr est un portage d'une partie du SDK du langage scala.
 
 On va y retrouver des `Option`, `Either`, `Try` dont on parlera plus tard, une API de collections immutable, des Tuples etc.
 
@@ -311,6 +311,16 @@ Les checkedFunction pour pouvoir lever des exceptions dans une lambda
 * `CheckedFunction8` : `(a, b, c, d, e, f, g, h) -> j`
 
 Chaque fonction expose une méthode de curryfication pour par exemple, passer de `(a, b) -> c` à `a -> b -> c`.
+
+On peut aussi, nativement faire de l'application partielle, sans passer par la curryfication :
+
+```java
+Function3<Integer, Integer, Integer, Integer> addition = (a, b, c) -> a + b + c;
+Function2<Integer, Integer> addition2 = sum.apply(2);
+
+var r = addition2.apply(4, 5);
+// 11
+```
 
 ## Aller plus haut
 
