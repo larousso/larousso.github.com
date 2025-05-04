@@ -1,0 +1,43 @@
+---
+slug: archi-hexa
+title: DDD, architecture hexagonale et hive pattern
+authors: [adelegue]
+tags: [patterns, ddd]
+---
+
+# DDD, architecture hexagonale et hive pattern
+
+Cela fait quelques années déjà que je m'intéresse au DDD mais j'ai toujours l'impression d'être un débutant.
+Même si j'utilise certains outils du DDD régulièrement dans mon travail, je ne me sens pas vraiment légitime à me considérer comme un pratiquant averti.
+
+Dans notre équipe, nous gérons un "référentiel de personnes", comme ça, ça ne sonne pas trop DDD. Et justement, nos use cases, m'ont amenés pleins de questions et d'interrogations sur la façon d'aborder certaines problématiques à travers les concepts DDD.
+
+{/* truncate */}
+
+## L'instant musical
+
+## Notre (nos) domaine(s)
+
+À la MAIF, la connaissance de la personne et la relation client, c'est vraiment un sujet au premier plan.
+Dans notre équipe, nous gérons un référentiel de personnes, dans lequel, on va stocker tout un tas de données qui font qu'un conseiller aura une bonne vision du sociétaire ou du client lorsqu'il devra intéragir avec lui.
+
+On va y trouver :
+* L'individu lui-même : son nom, prénom, civilité, téléphone, email, etc.
+* Son foyer : permet d'avoir l'adresse de contact ainsi que des infos sur les membres de la famille (qui sont des individus) qui pourraient être couvert, car dans le même foyer.
+* Les notions de représentation (tutelle, curatelle, habilitation familiale, succession) : en effet dans le cas d'une représentation, il faut intéragir avec le représentant.
+* Les entités juridiques : Association et collectivité, les auto entrepreneurs, etc. Ces structures ont des interlocuteurs qui sont des individus.
+
+Un point important, c'est que du point de vue des utilisateurs, les mêmes conseillers peuvent travailler sur toutes les typologies de données.
+Un même conseiller peut gérer le dossier d'un individu dont l'assurance couvre les membres de son foyer puis,
+passer sur le dossier d'un auto-entrepreneur puis,
+passer sur le dossier de quelqu'un qui serait représenté par un autre individu ou pas une association comme l'UDAF.
+
+Ici, on s'approche un peu du god modèle et on s'éloigne des principes DDD. L'individu est omniprésent dans plusieurs contextes différents : foyer, entités juridiques, représentation.
+Il y a un moment, j'avais vu le talk de Grégory Weinbach ["Il n'y a pas de bon modèle métier"](https://www.youtube.com/watch?v=qN43Dy6fGkk) avec l'exemple du livre dans plusieurs contextes :
+* du point de vue de l'auteur : une histoire, un nombre de pages, etc.
+* du point de vue de l'imprimeur : un grammage, une police de caractères, etc.
+* du point de vue du vendeur : un prix, un poids, etc.
+
+Dans notre cas, est-ce que l'individu ne concentre pas trop de facette ? Quel est vraiment notre métier ? Notre domaine ?
+
+
