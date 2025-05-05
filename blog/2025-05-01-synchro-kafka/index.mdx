@@ -218,7 +218,7 @@ A minima, il faut monitorer les lags, afin de pouvoir réagir et analyser rapide
 
 ### Gestion des doublons et idempotence
 
-Utiliser des retry, pour gérer les erreurs, a une autre conséquence : la création de doublons.
+Utiliser des retry, pour gérer les erreurs a une autre conséquence : la création de doublons.
 
 On va prendre un exemple, pour illustrer ce problème :
 
@@ -245,7 +245,7 @@ Dernier point à prendre en compte : absorber des mises à jour en masse. Il arr
 #### Utiliser correctement les partitions
 
 Le commit dans kafka se fait à la partition, ce qui veut dire qu'on ne pourra consommer qu'un message à la fois par partition.
-Le nombre de partitions indique la capacité du consommateur a consommer des messages en parallèle. 10 partitions, c'est consommer 10 messages à la fois.
+Le nombre de partitions indique la capacité du consommateur à consommer des messages en parallèle. 10 partitions, c'est consommer 10 messages à la fois.
 
 Mais attention ! Tenir compte des partitions, n'est pas toujours le comportement par défaut des libraires.
 
