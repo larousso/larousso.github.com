@@ -1,5 +1,5 @@
 ---
-slug: functional-porgramming-intro
+slug: functional-programming-intro
 title: La programmation fonctionnelle en java
 authors: [adelegue]
 tags: [patterns, java, prog-fonctionnelle]
@@ -7,7 +7,10 @@ tags: [patterns, java, prog-fonctionnelle]
 
 # La programmation fonctionnelle en java
 
+La version 8 du jdk a amené la programmation fonctionnelle en java, avec les fameuses lambda et les streams pour les collections. Mais peut-on réellement faire de la prog fonctionnelle en java ?
+Dans ce post, on fera un tour de quelques notions de prog fonctionnelle et on verra ce qu'on peut faire en java.
 
+{/* truncate */}
 
 ## L'instant musical
 
@@ -15,3 +18,31 @@ tags: [patterns, java, prog-fonctionnelle]
 
 ## Fonctions pures, fonctions totales, transparence référentielle
 
+En programmation fonctionnelle, on parle de manipulation de fonctions (pas con, c'est dans le nom en même temps !). Les fonctions peuvent avoir plusieurs propriétés, elles peuvent être
+* Pures
+* Totales
+* Transparentes référentiellement (pas sûr que ça se dise ...)
+
+### Fonctions pures
+
+Pour qu'une fonction soit pure, elle doit retourner le même résultat avec les mêmes paramètres d'entrée.
+
+Par exemple, cette fonction est pure :
+```java
+int additionner(int a, int b) {
+    return a + b;
+}
+```
+
+Si on exécute plusieurs fois `additionner(2, 3)` on obtiendra toujours `5`.
+
+Utiliser des fonctions pures est très confortable, il n'y a pas de surprise, c'est parfait !
+
+### Transparence référentielle
+
+La transparence référentielle, c'est lorsque substituer une fonction par une variable et manipuler cette variable revient à manipuler directement la fonction.
+Comme ça, ça peut paraître un peu flou, mais on va prendre un exemple.
+
+
+
+### Fonction totales
