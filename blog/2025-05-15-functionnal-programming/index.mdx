@@ -1,0 +1,168 @@
+---
+slug: functional-programming-intro
+title: La programmation fonctionnelle en java
+authors: [adelegue]
+tags: [patterns, java, prog-fonctionnelle]
+---
+
+import img from './img/img.png'
+
+# La programmation fonctionnelle en java
+
+La version 8 du jdk a amené la programmation fonctionnelle en java, avec les fameuses lambda et les streams pour les collections. Mais peut-on réellement faire de la prog fonctionnelle en java ?
+Dans ce post, on fera un tour de quelques notions de prog fonctionnelle et on verra ce qu'on peut faire en java.
+
+{/* truncate */}
+
+## L'instant musical
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/zYwCmcB0XMw?si=10p-SuRij0U20Mdq" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+## Fonctions pures, fonctions totales, transparence référentielle
+
+En programmation fonctionnelle, on parle de manipulation de fonctions (pas con, c'est dans le nom en même temps !). Les fonctions peuvent avoir plusieurs propriétés, elles peuvent être
+* Pures
+* Totales
+* Référentiellement transparentes (pas sûr que ça se dise ...)
+
+### Fonctions pures
+
+Pour qu'une fonction soit pure :
+* Sa valeur de retour doit toujours être la même pour les arguments en entrée
+* Elle ne doit pas avoir d'effet de bord : pas d'effet sur des variables en dehors du scope de la fonction.
+
+Par exemple, cette fonction est pure :
+```java
+int additionner(int a, int b) {
+    return a + b;
+}
+```
+
+Si on exécute plusieurs fois `additionner(2, 3)` on obtiendra toujours `5`.
+Aucune manipulation de variable externe, donc pas d'effet de bord.
+
+### Transparence référentielle
+
+La transparence référentielle, c'est lorsque substituer une fonction par une variable et manipuler cette variable revient à manipuler directement la fonction.
+Les fonctions pures sont référentiellement transparente.
+
+Comme ça, ça peut paraître un peu flou, mais on va prendre un exemple.
+
+On va commencer par définir un tuple :
+```java
+record Tuple<A, B>(A a, B a) {
+    static <A, B> Tuple<A, B> of(A a, B b) {
+        return new Tuple<>(a, b);
+    }
+}
+```
+
+Maintenant, on va regarder si `addtionner` respecte la transparence référentielle. Pour ça t1 et t2 doivent être équivalent :
+
+```java
+var result = additionner(2, 3);
+var t1 = Tuple.of(result, result);
+var t2 = Tuple.of(additionner(2, 3), additionner(2, 3));
+```
+Ici, c'est le cas, `addtionner` est **référentiellement transparente**.
+
+Maintenant imaginons la fonction suivante :
+
+```java
+static <T> T getValue(Iterator<T> iterator) {
+    if (iterator.hasNext()) {
+        return iterator.next();
+    } else {
+        return null;
+    }
+}
+```
+
+On va regarder si cette fonction est référentiellement transparente :
+
+```java
+var iterator = List.of(1, 2, 3, 4, 5, 6).iterator();
+var result = getValue(iterator);
+
+var t1 = Tuple.of(result, result);
+var t2 = Tuple.of(getValue(iterator), getValue(iterator));
+```
+
+Ici la fonction est **référentiellement opaque**. À chaque éxécution, on fait avancer l'`iterator` et on obtiendra des résultats et des comportements différents.
+
+### Fonction totales
+
+On va appeler fonction totale, une fonction qui retournera un résultat pour l'ensemble des valeurs possibles en entrée.
+
+La fonction `additionner`, est une fonction totale :
+```java
+int additionner(int a, int b) {
+    return a + b;
+}
+```
+Elle retournera un résultat pour la totalité des entiers.
+
+
+La fonction `diviser`, définie ainsi n'est pas totale :
+
+```java
+int diviser(int value, int par) {
+    return value / par;
+}
+```
+
+En effet, la division par `0` n'est pas possible. Pour rendre cette fonction totale, il faudra l'écrire :
+
+```java
+int diviser(int value, NonZeroInt par) {
+    return value / par;
+}
+```
+
+Avec par exemple :
+```java
+record NonZeroInt(int value) {
+    public NonZeroInt {
+        if (value == 0) throw new IllegalArgumentException("0 n'est pas authorisé");
+    }
+}
+```
+
+
+## Composition de fonction
+
+Un truc cool avec les fonctions, c'est qu'elles peuvent être composée. À partir de petites pièces, on peut fabriquer des pièces plus grosses et ainsi de suite.
+
+<a href="https://typelevel.org/cats/" target="_blank"><img src="https://typelevel.org/cats/img/cats2.png" /></a>
+
+La bonne nouvelle, c'est qu'en java, c'est possible ! L'interface fonctionnelle `java.util.Function` (ainsi que `java.util.BiFunction`) a une méthode `andThen` qui permet de faire de la composition.
+
+Imaginons les fonctions suivantes :
+* `fabriquerBrique` : `🌍 -> 🧱`
+* `fabriquerMaison` : `🧱-> 🏠`
+
+En composant ces 2 fonctions, on est capable de construire une maison :
+
+`fabriquerMaisonDeZéro` : `🌍-> 🏠`
+>    = `🌍 -> 🧱 puis 🧱-> 🏠`
+
+>    = `fabriquerBrique` ° `fabriquerMaison`
+
+En code java, on aura :
+
+```java
+Function<Argile, Brique> fabriquerBrique = ???;
+Function<Brique, Maison> fabriquerMaison = ???;
+
+Function<Argile, Maison> fabriquerMaisonDeZero = fabriquerBrique.andThen(fabriquerMaison);
+```
+
+## Aller plus haut
+
+<img src={img} width={400} />
+
+En l'état, on n'ira pas très loin pour coder une application complète avec ce qu'on vient de voir.
+
+Pour utiliser des fonctions pures et référentiellement transparentes, il nous faudra des armes supplémentaires comme l'immutabilité, la gestion des effets de bords, utiliser le système de type, etc.
+
+Pour compléter ce post qui sert d'introduction, des posts dédiés pour détailler chaque item seront publiés. On pourra ensuite assembler brique par brique nos fonctions et créer un programme complet et robuste.
