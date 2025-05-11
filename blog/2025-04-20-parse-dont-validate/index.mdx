@@ -10,7 +10,7 @@ tags: [prog-fonctionnelle, java]
 
 Dans les langages fonctionnels tels que java ou haskell, il est d'usage d'utiliser au maximum le compilateur pour éviter le plus tôt possible les bugs.
 
-Avec l'arrivée du jdk 17 et notamment des sealed class et des record, java nous propose de nouvelles fonctionnalités pour utiliser encore plus le système de type et donc le compilateur.
+Avec l'arrivée du jdk 17, et notamment des sealed class et des record, java nous propose de nouvelles fonctionnalités pour utiliser encore plus le système de type et donc le compilateur.
 
 L'approche "parse, don't validate" propose de créer des types riches pour représenter les données plutôt que d'utiliser les types primitifs comme String, Boolean etc et ainsi rendre impossible les états incohérents.
 Dans le cas d'une API, une fois le payload d'une requête parsé, c'est le compilateur qui reprend la main et valide le code pour vous.
@@ -70,9 +70,9 @@ Ici, on peut déjà remarquer que
 
 ## Un peu de théorie
 
-Une solution pour répondre aux problématiques énoncées précédemment est d'utiliser des ADT "type algébrique de données" (algebric data type) pour représenter les différents états gérés par notre application.
+Une solution pour répondre aux problématiques énoncées précédemment est d'utiliser des ADT "type algébrique de données" (algebraic data type) pour représenter les différents états gérés par notre application.
 
-Un type algébrique est soit un "type produit" (product type) un "type somme" (sum type).
+Un type algébrique est soit un "type produit" (product type), soit un "type somme" (sum type).
 
 ### Type produit
 
@@ -88,7 +88,7 @@ record Voiture (Marque marque, String modele, Integer prix) {}
 
 ### Type somme
 
-Un type somme est un union. La cardinalité d'un type somme est la somme des cardinalités de types "contenus".
+Un type somme est une union de types. La cardinalité d'un type somme est la somme des cardinalités des types "contenus".
 
 En java, on pensera à un enum.
 
@@ -272,9 +272,11 @@ L'approche "parse don't validate" est un bon complément de l'architecture hexag
 ## En conclusion
 
 L'approche "parse don't validate" rend le code bien plus robuste, mais elle a un coût de mise en œuvre.
-Il faudra également être vigilent lors des évolutions car il se pourrait qu'en ajoutant des contraintes supplémentaires dans son code, on ne puisse plus relire nos données stockées en base.
+Il faudra également être vigilant lors des évolutions car, il se pourrait qu'en ajoutant des contraintes supplémentaires dans son code, on ne puisse plus relire nos données stockées en base.
 
 Quoi qu'il soit, il est clair que cette approche rendra votre code moins sujet aux bugs. A vous de choisir le niveau de contraintes que vous souhaitez appliquer !
+
+Vous pourrez trouver un projet d'exemple [ici](https://github.com/larousso/parse-dont-validate-java)
 
 ## PS
 
