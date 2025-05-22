@@ -1,0 +1,347 @@
+---
+slug: functionnal-programming-sideeffect
+title: prog fonct en java - effets de bord
+authors: [adelegue]
+tags: [patterns, java, prog-fonctionnelle]
+---
+
+Dans l'article précédent, on a parlé d'immutabilité qui limite une partie des effets de bord, en empêchant la modification de variable en dehors du scope de fonctions.
+Cette fois-ci, on va aller plus loins, en traitant : les exceptions, les IO, les dates ou les traitements aléatoires.
+
+{/* truncate */}
+
+Disclaimer : cet article sera truffé d'inexactitudes et risque de faire bondir les puristes fonctionnels. Ici le but est de vulgariser certains concepts pas d'offrir une démonstration mathématique.
+
+## L'instant musical
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/hWP2a8WpuQ0?si=TbuvTzH6m9wjlEDC" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+## Les effets de bord
+
+En programmation fonctionnelle les exceptions sont considérés comme des effets de bord.
+On peut voir la gestion des exceptions comme un GOTO et on perd complétement le flow d'exécution.
+
+De même, si on a une fonction qui génère des valeurs aléatoires, la fonction ne sera pas pure.
+
+Mais alors comment peut-on gérer ces cas ?
+
+En scala et dans [Vavr](https://vavr.io/), il existe un concept qui s'appelle le `Try`. Le `Try` représente le résultat d'une fonction qui est, soit en succès, soit en échec à cause d'une exception. Avec le `Try`, on va capturer l'exécution d'un programme, afin de retourner une valeur qui représente l'incertain.
+
+Comme Schrodinger, avant d'ouvrir le `Try`, on ne sait pas si le traitement a échoué.
+
+On pourra donc écrire la fonction suivante :
+
+```java
+public Try<Integer> diviser(Integer a, Integer b) {
+    return Try.of(() -> a / b);
+}
+```
+
+La division par 0 provoquera un résultat avec un `Try` qui sera en échec.
+Notre fonction est devenue total, elle produit un résultat pour l'intégralité des valeurs en entrée.
+
+Cette approche va nous permet de programmer en manipulant des valeurs, plus besoin d'être en mode pokemon pour catcher toutes exceptions.
+
+## Composition de fonctions
+
+Dans le premier article, on a vu en quoi la composition de fonctions pouvait être intéressante pour, à partir de petites pièces, fabriquer de plus grandes pièces.
+
+Pour rappel, avec la composition de fonctions, on pouvait composer `a -> b` avec `b -> c` pour obtenir `a -> c`.
+
+Est-ce qu'on pourrait faire de même avec un `Try` ? On pourrait composer `a -> Try<b>` avec `b -> Try<c>` pour obtenir `a -> Try<c>`.
+
+Avec les fonctions classiques, on a :
+
+```java
+interface Function<A, B> {
+
+    B apply(A a);
+
+    <C> Function<A, C> andThen(Function<B, C> fun) {
+        return a -> fun.apply(apply(a));
+    }
+}
+```
+
+Avec le `Try<>` on voudrait quelque chose comme :
+
+```java
+interface TryFunction<A, B> {
+
+    Try<B> apply(A a);
+
+    <C> TryFunction<A, C> andThen(TryFunction<B, C> func) {
+        return a -> {
+            Try<A> tryA = apply(a);
+            return ???; // quelque chose comme tryA.xxx(func);
+        };
+    }
+}
+```
+
+Eh bien, on a vraiment de la chance ! Il existe la méthode `flatMap` telle que pour un `Try<A>` on ait `Try<B> flatMap(A -> Try<B>)`.
+
+On peut donc écrire :
+
+```java
+interface TryFunction<A, B> {
+
+    Try<B> apply(A a);
+
+    <C> TryFunction<A, C> andThen(TryFunction<B, C> fun) {
+        return a -> apply(a).flatMap(fun);
+    }
+}
+```
+
+Youpi ! La méthode `flatMap` permet la composition !
+
+Si on résume, on peut capturer un effet de bord avec `Try` et faire de la composition grâce à la méthode `flatMap`.
+
+Mais, il nous manque encore quelque chose pour rendre le `Try` utilisable, c'est
+* la possibilité de créer un `Try` à partir de n'importe quelle valeur, genre une factory
+* la possibilité de transformer "le contenu" d'un `Try` en autre chose.
+
+Pour créer un `Try` à partir de n'importe quelle valeur, il existe la méthode `success` :
+```java
+Try<String> stringTry = Try.success("Yo yo yo");
+```
+
+Pour transformer le contenu, on aimerait quelque chose comme :
+```java
+Try<String> stringTry = Try.success("Yo yo yo");
+
+Try<Integer> integerTry = stringTry.tranform(str -> str.length());
+```
+
+On appelle usuellement cette méthode `map`.
+
+```java
+Try<Integer> integerTry = stringTry.map(str -> str.length());
+```
+
+Cette méthode `map` peut être implémenté facilement, à partir de ce qu'on a déjà sous la main : `success` et `flatMap` :
+
+```java
+<B> Try<B> map(Function<A, B> func) {
+    return this.flatMap(a -> {
+        B b = func.apply(a);
+        return Try.success(b);
+    });
+}
+```
+
+Petit point de situation, on sait donc :
+* Capturer un traitement à effet de bord dans un `Try`
+* Composer des traitements à effet de bord
+* Modifier "le contenu" d'un `Try`
+
+## Gimme more !
+
+Le `Try` c'est pas mal, on peut traiter le résultat de programmes qui fail comme des valeurs mais, une `Exception`, ça n'est pas très précis comme cause d'erreur. On aimerait pouvoir prendre la main et créer nos propres classes d'erreur.
+
+Encore une fois, on a de la chance ! Il existe le `Either`. Un either peut être `Left` ou `Right` avec pour convention :
+* `Left` pour les erreurs
+* `Right` pour les succès
+
+Dans vavr, en partant d'un `Try`, on peut obtenir un `Either` ainsi :
+```java
+Either<DivisionParZeroImpossible, Integer> division(Integer a, Integer b) {
+    return Try(() -> a / b)
+            .toEither(new DivisionParZeroImpossible());
+}
+```
+
+Comme pour les `Try`, les `Either` sont composables à partir du moment où ils ont un côté gauche de même type, on fait ça avec la méthode `flatMap`.
+Comme pour les `Try`, on peut également créer un `Either` à partir de n'importe quelle valeur avec la méthode `Either.right`.
+
+On se rend compte que le `Try` et le `Either` ont un comportement similaire mais, ils ne sont pas les seuls !
+
+On pense par exemple à l'`Option` (ou `Optional` en java) qui représente soit une valeur, soit l'absence de valeur. Pourquoi pas une `Mono` qui représente un `IO` futur asynchrone.
+
+Comme pour `Try` et `Either`, l'`Option` et `Mono` ont une méthode `flatMap` et sont composables. Comme pour `Try` et `Either`, on peut créer une instance à partir de n'importe quelle valeur avec `Option.some` ou `Mono.just`.
+
+Tiens, tiens, tiens ! Est-ce qu'il n'y aurait pas quelque chose en commun entre tous ces concepts ?
+
+Eh bien oui ! Ce sont des **monades** !
+
+## Une mo* quoi ?
+
+En quelque sorte, une monade peut être n'importe quelle structure ou concept qui est composable et qui respecte certaines règles.
+
+Une monade `M` doit avoir
+* un constructeur (`unit` en scala ou `return` en Haskell), tel que pour n'importe quelle valeur de type `A`, on puisse construire un `M<A>`. Une fonction de la forme `A -> M<A>`.
+* une fonction de composition (`flatMap` en scala ou `>>=` en Haskell), tel que `M<A>.flatMap(A -> M<B>) => M<B>`.
+
+En java, on ne peut pas utiliser de generics pour les "constructeurs de type" mais si c'était possible, on aurait :
+
+```java
+interface Monad<F<?>, A> {
+    static F<A> unit(A a);
+    <B> F<B> flatMap(Function<A, F<B>> func);
+}
+```
+
+La monade doit respecter 3 règles :
+* Identité à gauche `unit(x).flatMap(f) == f(x)`
+* Identité à droite `m.flatMap(unit) == m`
+* Associativité `m.flatMap(f).flatMap(g) == m.flatMap(x ⇒ f(x).flatMap(g))`
+
+Et si on testait ces règles avec un `Try` ?
+
+### Identité à gauche
+
+La règle à respecter est `unit(x).flatMap(f) == f(x)`. Donc :
+
+```java
+Function<String, Try<<Integer>> f = str -> Try(() -> str.length());
+
+Try<Integer> result1 = Try.success("Test").flatMap(f);
+Try<Integer> result2 = f.apply("Test");
+
+assertThat(result1).isEqualTo(result2);
+```
+
+### Identité à droite
+
+La règle à respecter est `m.flatMap(unit) == m`. Donc :
+
+```java
+Try<String> monTry = Try.success("Test");
+
+Try<String> result = monTry.flatMap(s -> Try.success(s));
+
+assertThat(monTry).isEqualTo(result);
+```
+
+### Associativité
+
+La règle à respecter est `m.flatMap(f).flatMap(g) == m.flatMap(x ⇒ f(x).flatMap(g))`. Donc :
+
+```java
+Try<String> monTry = Try.success("Test");
+Function<String, Try<<String>> f = str -> Try(() -> str.toUpperCase());
+Function<String, Try<<Integer>> g = str -> Try(() -> str.length());
+
+Try<Integer> result1 = monTry.flatMap(f).flatMap(g);
+Try<Integer> result2 = monTry.flatMap(str -> f.apply(str).flatMap(g));
+
+assertThat(result1).isEqualTo(result2);
+```
+
+## Les Foncteurs
+
+Les monades sont des foncteurs mais, l'inverse n'est pas vrai.
+Là où les monades représentent la notion de composition, le foncteur représente la notion de "transformation".
+
+C'est ce qu'on a vu tout à l'heure avec la méthode `map`.
+
+Le foncteur vient lui aussi avec des lois :
+* 2 transformations succéssives reviennent à faire de la composition de fonction : `fa.map(f).map(g) = fa.map(f.andThen(g))`
+* Une transformation avec la fonction identité revient à ne rien faire : `fa.map(x => x) = fa`
+
+Le `Try` est une monade, mais aussi un foncteur. Donc, on aura :
+
+**Composition :**
+
+```java
+Function<String, String> toUpperCase = str -> str.toUpperCase();
+Function<String, Integer> stringLength = str -> str.length();
+Try<String> stringTry = Try.success("Valeur");
+
+Try<Integer> result1 = stringTry.map(toUpperCase).map(stringLength);
+Try<Integer> result2 = stringTry.map(str -> toUpperCase.andThen(stringLength).apply(str));
+assertThat(result1).isEqualTo(result2);
+```
+
+**Fonction identité :**
+```java
+Try<String> stringTry = Try.success("Valeur");
+Try<String> result = stringTry.map(Function.identity());
+assertThat(stringTry).isEqualTo(result);
+```
+
+## Les Foncteurs applicatifs
+
+On sait chaîner des traitements, transformer des valeurs, maintenant, on voudrait combiner des valeurs.
+
+Pour ça, en scala dans `cats`[https://typelevel.org/cats] on a la méthode `product`. À noter que ce concept de "produit" n'existe pas directement dans vavr mais est utilisable quand dans les monades.
+
+Si on devait l'écrire, la méthode `product` aurait cette forme en java, par exemple sur un `Try` :
+
+```java
+<A, B> Try<Tuple2<A, B>> product(Try<A> tryA, Try<B> tryB);
+```
+
+En gros, on prend 2 `Try` indépendants, on va pouvoir combiner leurs valeurs en une paire. Contrairement à la composition, on ne chaîne pas 2 traitements interdépendants.
+
+Sur une liste, le produit sera le produit cartésien des 2 listes, dans vavr, c'est `crossProduct` :
+```java
+var l1 = List.of(1, 2, 3, 4, 5);
+var l2 = List.of("a", "b", "c");
+
+List<Tuple2<Integer, String>> l3 = l1.crossProduct(l2).toList();
+// List((1, a), (1, b), (1, c), (2, a), (2, b), (2, c), (3, a), (3, b), (3, c), (4, a), (4, b), (4, c), (5, a), (5, b), (5, c))
+```
+
+### Traverse et sequence
+
+Les foncteurs applicatifs nous permettent de "traverser" des listes. Pour comprendre le principe, on va prendre un exemple.
+
+On imagine une méthode `getById` avec la signature suivante :
+```java
+Try<Person> getById(String id) {
+    ...
+}
+```
+
+Si on a une liste d'id et que l'on souhaite récupérer les personnes pour chaque id, on peut faire :
+```java
+List<String> ids = ???;
+List<Try<Person>> persons = ids.map(id -> getById(id));
+```
+Ce résultat ne sera pas très facile à gérer, on aimerait plus obtenir un `Try<List<Person>>`, qui serait en succès si chaque `getById` était en succès et en échec sinon.
+C'est ici qu'entre en jeu `traverse` ou `sequence` :
+
+```java
+Try<List<Person>> resultats = Try.traverse(ids, id -> getById(id));
+```
+
+Si on avait déjà une liste de try, on peut utiliser `sequence`
+```java
+List<Try<Person>> persons = ???;
+Try<List<Person>> resultats = Try.sequence(persons);
+```
+
+
+## Briller en société
+
+Mais à quoi ça sert tout ça ?
+
+En gros, à pas grand-chose, sinon mettre des noms compliqués sur des concepts et bien sûr, briller en société !?
+
+Qui n'a pas eu envie de glisser le mot monade dans une conversation ?
+
+![Snob](img/img.png)
+
+En java, on ne peut pas vraiment créer de l'outillage autour de ces concepts, comme cela est fait dans d'autres langages.
+Est-que cette connaissance sera seulement de la culture générale ?
+
+Personnellement, je trouve que le fonctionnel aide à structurer sa pensée quand on doit écrire du code. On va réfléchir à structurer et composer nos traitements en utilisant les différents comportements : composition, transformation, produit, etc.
+
+En java, on aime bien les builders, eh bien en quelque sorte, on peut voir la programmation fonctionnelle comme un builder de programme dans lequel, on va décrire ce que le programme doit faire en combinant nos petites pièces.
+Les notions de monades, de foncteurs, de foncteurs applicatifs vont nous aider à savoir comment combiner nos traitements.
+
+Un autre aspect intéressant, c'est que régulièrement,
+je vois passer des nouvelles lib pour résoudre des problèmes avec des approches parfois folkloriques,
+où finalement, on aurait pu résoudre le même problème avec par ex une approche monadique ou autre pattern fonctionnel, et c'est bien dommage.
+Un des avantages des patterns fonctionnels, c'est qu'ils sont éprouvés et basés sur des fondations solides. Autant ne pas réinventer la roue.
+
+## Mise en pratique
+
+Pour illustrer l'utilisation de chacun de ces concepts,
+on va prendre un exemple assez simple : la création d'une personne avec validation de données.
+
+
+
+
