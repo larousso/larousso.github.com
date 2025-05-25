@@ -15,7 +15,7 @@ Dans le post précédent, on a vu les fondations de la programmation fonctionnel
 
 ## L'immutabilité
 
-Une façon de ne pas galérer avec les fonctions pures, c'est d'avoir des variables immutables. Mais comment ça se passe en java ?
+Une façon de ne pas galérer avec les fonctions pures, c'est d'avoir des variables immuables. Mais comment ça se passe en java ?
 
 Il existe le mot clé `final` qui permet d'assurer qu'une variable ne pourra pas être réaffectée.
 Il peut être utilisé :
@@ -86,8 +86,8 @@ comme ça : pas besoin de `getter` !
 ```java
 public class User {
 
-    public String nom;
-    public String email;
+    public final String nom;
+    public final String email;
 
     public User(String nom, String email) {
         this.nom = nom;
@@ -102,9 +102,9 @@ On peut encore faire plus concis, en remplaçant la classe par un record :
 public record User(String nom, String email) {}
 ```
 
-Les attributs du record sont immutables par défaut.
+Les attributs du record sont immuables par défaut.
 
-Avoir des structures immutables ajoute une certaine sécurité et diminue la charge mentale lors du développement mais, elle vient avec un certain nombre de contraintes.
+Avoir des structures immuables ajoute une certaine sécurité et diminue la charge mentale lors du développement mais, elle vient avec un certain nombre de contraintes.
 
 Premièrement, comme il n'y a plus de setter, il devient plus compliqué de modifier un attribut. Pour ça, on va devoir créer une nouvelle instance :
 
@@ -134,7 +134,7 @@ Malheureusement, il va falloir attendre un peu...
 
 En attendant, il faudra écrire les `with` à la main ou utiliser la lib dont personne ne prononce le nom, qui commence par `lom` et qui finit par `bok`.
 
-En utilisant des structures avec des attributs immutables, on peut vite se rendre compte que ça devient assez difficile de modifier la feuille d'une structure un peu plus complèxe :
+En utilisant des structures avec des attributs immuables, on peut vite se rendre compte que ça devient assez difficile de modifier la feuille d'une structure un peu plus complèxe :
 
 ```java
 var userUpdated = user
@@ -151,10 +151,10 @@ Malheureusement, il n'existe aucune implémentation en java.
 
 ## L'immutabilité dans le jdk
 
-Nous venons de voir comment créer nos propres structures immutables, mais que propose java en terme d'immutabilité dans le jdk ?
+Nous venons de voir comment créer nos propres structures immuables, mais que propose java en terme d'immutabilité dans le jdk ?
 
 Historiquement, java n'était pas trop porté sur l'immutabilité, même si les choses changent petit à petit (comme on l'a vu avec les records).
-Pourtant, certaines classes sont immutables par défaut, et depuis très longtemps, on peut penser à `java.lang.String`.
+Pourtant, certaines classes sont immuables par défaut, et depuis très longtemps, on peut penser à `java.lang.String`.
 
 Ça ne nous viendrait pas à l'esprit d'écrire ce code :
 
@@ -163,7 +163,7 @@ String monTexte = "Un texte";
 monTexte.append(" avec une suite");
 ```
 
-Tout le monde a bien intégré que `String` est immutable et que la concatenation produira une nouvelle valeur :
+Tout le monde a bien intégré que `String` est immuable et que la concatenation produira une nouvelle valeur :
 
 ```java
 String monTexte = "Un texte";
@@ -194,7 +194,7 @@ java.lang.UnsupportedOperationException
 
 <img src="https://ichef.bbci.co.uk/ace/ws/640/cpsprodpb/AAEC/production/_97665734_mediaitem97650019.jpg.webp" width={500}/>
 
-D'ailleurs, dans certains cas, ce sont directement des listes immutables qui sont créées :
+D'ailleurs, dans certains cas, ce sont directement des listes immuables qui sont créées :
 
 ```java
 List<String> immutableList = List.of("a");
@@ -235,12 +235,12 @@ tempList.add("b");
 List<String> newList = Collections.unmodifiableList(tempList);
 ```
 
-Pas vraiment mieux ...
+Pas vraiment mieux...
 
 
-Quand on commence à vraiment utiliser des collections immutables, l'API de collections de la lib [`vavr`](https://vavr.io/) est largement au-dessus du jdk.
+Quand on commence à vraiment utiliser des collections immuables, l'API de collections de la lib [`vavr`](https://vavr.io/) est largement au-dessus du jdk.
 
-Vavr a porté toute l'API de collection de scala en java, et les collections proposées sont immutables par défaut :
+Vavr a porté toute l'API de collection de scala en java, et les collections proposées sont immuables par défaut :
 
 ```java
 List<String> empty = List.empty();
@@ -251,7 +251,7 @@ Ici, pas de mauvaises surprises ! Comme par exemple, des exceptions qui nous pè
 
 ### Impacts de l'immutabilité
 
-Comme pour les structures immutables, l'immutabilité dans les collections vient avec son lot de manipulations un peu tricky.
+Comme pour les structures immuables, l'immutabilité dans les collections vient avec son lot de manipulations un peu tricky.
 
 Un cas d'école, incrémenter un compteur en parcourant une liste :
 
@@ -262,7 +262,7 @@ for (String elt : list) {
 }
 ```
 
-N'est plus possible en version immutable. Le code suivant ne compile plus :
+N'est plus possible en version immuable. Le code suivant ne compile plus :
 
 ```java
 final int i = 0;
@@ -330,6 +330,7 @@ static Integer count(Node node) {
 Il existe des outils dans le jdk pour gérer l'immutabilité mais, malheureusement, comme souvent avec java,
 même si les fondations sont là, on sera vite tenté d'ajouter des dépendances pour profiter d'API plus fluides.
 
-Manipuler en permanences des objets immutables aura un coût d'apprentissage et il faudra probablement faire preuve d'ingéniosité pour résoudre certaines situations.
+Manipuler en permanences des objets immuables aura un coût d'apprentissage et il faudra probablement faire preuve d'ingéniosité pour résoudre certaines situations.
 
-Une fois le coup de main pris, manipuler des objets immutables libère un peu la tête, pas de mauvaises surprises, pas de risques que l'objet ait été modifié hors de la méthode courante.
+Une fois le coup de main pris, manipuler des objets immuables libère un peu la tête, pas de mauvaises surprises,
+pas de risques que l'objet ait été modifié hors du scope de la méthode courante.
