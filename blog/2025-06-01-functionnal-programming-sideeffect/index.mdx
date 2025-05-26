@@ -342,6 +342,179 @@ Un des avantages des patterns fonctionnels, c'est qu'ils sont éprouvés et bas�
 Pour illustrer l'utilisation de chacun de ces concepts,
 on va prendre un exemple assez simple : la création d'une personne avec validation de données.
 
+On va partir de la classe suivante
 
+```java
+record Utilisateur(String id, String nom, LocalDate dateNaissance, LocalDate datePermisConduire, String email) {}
+```
 
+On va écrire un service qui doit mettre à jour cet utilisateur uniquement s'il est valide.
 
+Tout d'abord, la liste des erreurs de validation possible :
+
+```java
+public sealed interface UtilisateurError {
+
+    String message();
+
+    record UtilisateurInexistant() implements UtilisateurError {
+        @Override
+        public String message() {
+            return "L'utilisateur recherché n'existe pas";
+        }
+    }
+
+    record EmailFormatNonValide() implements UtilisateurError {
+        @Override
+        public String message() {
+            return "Le format de l'email n'est pas valide";
+        }
+    }
+
+    record DateDeNaissanceDansLeFutur() implements UtilisateurError {
+        @Override
+        public String message() {
+            return "La date de naissance ne peut pas être dans le futur";
+        }
+    }
+
+    record DateDePermisInvalide() implements UtilisateurError {
+        @Override
+        public String message() {
+            return "Il faut avoir 18 ans pour passer son permis";
+        }
+    }
+}
+```
+
+Comme plusieurs erreurs peuvent être remontées, on écrit également une classe qui empile les erreurs.
+
+```java
+public record PersonErrors(List<UtilisateurError> errors) {
+    public static PersonErrors create(UtilisateurError error) {
+        return new PersonErrors(List.of(error));
+    }
+
+    // Ici on peut merger 2 stack d'erreurs ensemble
+    public PersonErrors combineAvec(PersonErrors other) {
+        return new PersonErrors(this.errors().appendAll(other.errors()));
+    }
+}
+```
+
+On a également un repository qui permet de lire et de persister en base :
+
+```java
+interface UtilisateursRepository {
+    // Comme la personne n'est peut-être pas, on retourne un Option :
+    Option<Utilisateur> rechercherParId(String id);
+    Utilisateur mettreAJour(Utilisateur utilisateur);
+}
+```
+
+On va ensuite écrire notre service, qui va valider et se charger de persister si c'est ok.
+
+Tout d'abord, on va écrire les validations. Chaque validation retourne une `PersonErrors` car il peut y avoir plusieurs problèmes d'un coup.
+
+Si l'email est renseigné, il doit réspecter une expression régulière :
+
+```java
+static Either<PersonErrors, Tuple0> verifierEmail(Utilisateur utilisateur) {
+    if (Objects.nonNull(utilisateur.email()) && !EMAIL_REGEX.matcher(utilisateur.email()).matches()) {
+        return Either.left(PersonErrors.create(new UtilisateurError.EmailFormatNonValide()));
+    } else {
+        return Either.right(Tuple());
+    }
+}
+```
+
+On valide que la date de naissance est dans le passé :
+
+```java
+static Either<PersonErrors, Tuple0> verifierDateNaissance(Utilisateur utilisateur) {
+    if (Objects.nonNull(utilisateur.dateNaissance()) && utilisateur.dateNaissance().isAfter(LocalDate.now())) {
+        return Either.left(PersonErrors.create(new UtilisateurError.DateDeNaissanceDansLeFutur()));
+    } else {
+        return Either.right(Tuple());
+    }
+}
+```
+
+Un peu plus compliqué, on valide la cohérence entre la date de permis et la date de naissance :
+
+```java
+static Either<PersonErrors, Tuple0> verifierDateDePermis(Utilisateur utilisateur) {
+    if (Objects.nonNull(utilisateur.dateNaissance()) &&
+            Objects.nonNull(utilisateur.datePermisConduire()) &&
+            utilisateur.dateNaissance().plusYears(18).isAfter(utilisateur.datePermisConduire())) {
+        return Either.left(PersonErrors.create(new UtilisateurError.DateDePermisInvalide()));
+    } else {
+        return Either.right(Tuple());
+    }
+}
+```
+
+Maintenant, on va orchestrer tout ça dans notre service :
+
+```java
+class Utilisateurs {
+		private final UtilisateursRepository utilisateursRepository;
+
+		public Utilisateurs(UtilisateursRepository utilisateursRepository) {
+			this.utilisateursRepository = utilisateursRepository;
+		}
+
+		public Either<PersonErrors, Utilisateur> mettreAJour(String id, Utilisateur utilisateur) {
+
+            // Recherche de la personne existante en base :
+			Option<Utilisateur> mayBePerson = utilisateursRepository.rechercherParId(id);
+			return mayBePerson
+                    // On passe d'un `Option` à un `Either`, en donnant un sens à l'absence de valeur :
+					.toEither(PersonErrors.create(new UtilisateurError.UtilisateurInexistant()))
+					.flatMap(personneExistante ->
+                            // On passe toutes les règles et on collecte soit une liste d'erreur, soit une liste de succès
+							Either.sequence(List(
+									verifierEmail(utilisateur),
+									verifierDateDePermis(utilisateur),
+									verifierDateNaissance(utilisateur)
+							))
+                            // On combine toutes les erreurs ensemble
+							.mapLeft(errors -> errors.reduce(PersonErrors::combineAvec))
+							// Si c'est good, on persiste
+                            .map(any ->
+								utilisateursRepository.mettreAJour(utilisateur.withId(id))
+							)
+					);
+		}
+}
+```
+
+Il reste à écrire le controller rest :
+
+```java
+@RestController
+class PersonController {
+
+    private final Utilisateurs utilisateurs;
+
+    @PutMapping("/persons/{id}")
+    public ResponseEntity<?> update(@PathVariable("id") String id, @RequestBody Utilisateur utilisateur) {
+        return utilisateurs.mettreAJour(id, utilisateur)
+                // fold permet de gérer les erreurs et les succès afin de retourner un résultat de même type :
+                .fold(
+                        // Si c'est ko, c'est une bad request
+                        errors -> ResponseEntity.badRequest().body(errors),
+                        // Sinon c'est un statut ok 200
+                        updated -> ResponseEntity.ok().body(updated)
+                );
+    }
+}
+```
+
+Vous noterez, qu'ici, nous n'avons pas géré les exceptions.
+Lever des exceptions n'est pas un souci en soi, c'est de les catcher qui pose un problème.
+Comme évoqué précédemment, throw + catch équivaut à un GOTO et casse le flow d'exécution.
+
+Personnellement, j'aime bien traiter les erreurs métier avec le côté gauche de l'either pour que ça termine en 400.
+La gestion des erreurs métier devient facile à suivre de méthodes en méthodes jusqu'au controller.
+Pour les erreurs techniques, je laisse crasher pour que ça finisse en 500.
