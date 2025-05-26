@@ -316,7 +316,7 @@ On peut aussi, nativement faire de l'application partielle, sans passer par la c
 
 ```java
 Function3<Integer, Integer, Integer, Integer> addition = (a, b, c) -> a + b + c;
-Function2<Integer, Integer, Integer> addition2 = sum.apply(2);
+Function2<Integer, Integer, Integer> addition2 = addition.apply(2);
 
 var r = addition2.apply(4, 5);
 // 11
