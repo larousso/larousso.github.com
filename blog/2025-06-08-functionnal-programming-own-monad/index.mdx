@@ -1,0 +1,582 @@
+---
+slug: functionnal-programming-own-monad
+title: Prog fonct en java - écrire sa monade
+authors: [adelegue]
+tags: [patterns, java, prog-fonctionnelle]
+---
+
+Cette fois, on va aller encore un peu plus loins : on va écrire notre propre monade !
+
+{/* truncate */}
+
+## L'instant musical
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/A9RMr9KuVZo?si=QQXx2sdHnB74KJSm" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+## Le use case
+
+Si vous faites du spring reactif, ça peut vite devenir la plaie de gérer du métier.
+
+Si on souhaite avoir des erreurs explicites, on peut utiliser un `Either` mais le problème, c'est qu'on se retrouve avec des `Mono<Either<E, A>>` en permanence et, ça alourdit énormément le code.
+
+Pour manipuler cette structure, il faut sans cesse manipuler 2 niveaux : le `Mono` puis le `Either` :
+
+```java
+Mono<Either<AppError, String>> result = ...;
+Mono<Either<AppError, Integer>> result2 =  result
+    .map(either -> either
+        .map(ok ->
+            ok.length()
+        )
+    );
+```
+
+En fait, il est possible de créer de nouvelles monades en stackant des monades existantes. On appelle ça des "monad transformer".
+
+Avec notre `Mono<Either<E, A>>`, on peut écrire une nouvelle classe ainsi :
+
+```java
+record IO<E, A>(Mono<Either<E, A>> underlying) {
+    public <B> IO<E, B> flatMap(Function<A, IO<E, B>> f) {
+        ...
+    }
+}
+```
+
+Comme on est gourmand, on va ajouter une autre capacité à notre monade, la capacité de mettre de côté des événements à publier. Comme on est encore plus gourmand, on va se passe de vavr et écrire ça en java vanilla !
+
+## Notre super monade
+
+<a href="https://impurepics.com/posts/2020-09-13-talking-monads.html" target="_blank">
+    <img src="https://imgur.com/7wEgPe4.png" />
+</a>
+
+Tout d'abord, on commence par l'either. Depuis le jdk 21, on peut utiliser les `sealed` interface pour créer des types "union". On va pouvoir écrire l'either ainsi :
+
+```java
+public sealed interface Either<E, A> {
+
+    record Right<E, A>(A value) implements Either<E, A> { }
+    record Left<E, A>(E value) implements Either<E, A> { }
+
+    static <E, A> Either<E, A> right(A value) {
+        return new Right<>(value);
+    }
+
+    static <E, A> Either<E, A> left(E value) {
+        return new Left<>(value);
+    }
+}
+```
+Pour le moment, on ne se prend pas la tête avec `map` et `flatMap`.
+
+Il faut ensuite qu'on écrive une structure qui permet de stacker nos événements en plus de la valuer courante. Il existe une monade qui permet de faire ça, c'est la writer monad.
+
+Dans notre cas de figure, comme pour l'either, on ne va pas vraiment écrire une monade, on va seulement écrire une classe pour conserver la valeur et les événements :
+
+```java
+record Writer<S, A>(List<S> log, A value) { }
+```
+
+Maintenant, on va écrire notre super monade en utilisant nos 2 structures :
+
+```java
+public class IO<S, E, A> {
+    private final Mono<Either<E, Writer<S, A>>> underlying;
+
+    private IO(Mono<Either<E, Writer<S, A>>> underlying) {
+        this.underlying = underlying;
+    }
+}
+```
+
+Pour que ça soit une monade, il faut écrire la méthode `flatMap`. Attention, c'est parti (ça va piquer un peu) :
+
+```java
+public <B> IO<S, E, B> flatMap(Function<A, IO<S, E, B>> f) {
+
+    Mono<Either<E, Writer<S, B>>> newValue = this.underlying.flatMap(eitherA ->
+            // On test le résultat courant :
+            switch (eitherA) {
+                // Si il est KO, pas de question a se poser : on retourne KO
+                case Either.Left(var err) -> Mono.just(Either.<E, Writer<S, B>>left(err));
+                case Either.Right(var okA) -> {
+                    // Si le résulat est ok, on applique la fonction
+                    IO<S, E, B> result = f.apply(okA.value());
+                    yield result.underlying.flatMap(eitherB ->
+                            switch (eitherB) {
+                                // Si le résultat de la fonction est KO : on retourne KO
+                                case Either.Left(var errB) -> Mono.just(Either.left(errB));
+                                // Si le résultat est Ok
+                                case Either.Right(var okB) -> {
+                                    // On combine les logs
+                                    List<S> newLog = Stream.concat(okA.log().stream(), okB.log().stream()).toList();
+                                    // On retourne OK
+                                    yield Mono.just(Either.right(new Writer<>(newLog, okB.value())));
+                                }
+                            }
+                    );
+                }
+            }
+    );
+
+    // On a obtenue un `Mono<Either<E, Writer<S, B>>>`, mais il faut retourner un IO
+    return new IO<>(newValue);
+}
+```
+
+Une monade doit aussi avoir la méthode `unit`. Ici, c'est le cas d'une valeur en succès, on pourra écrire :
+
+```java
+public static <S, E, A> IO<S, E, A> succeed(A value) {
+    return new IO<>(Mono.just(Either.right(new Writer<>(List.of(), value))));
+}
+```
+
+On va également écrire la version erreur :
+
+```java
+public static <S, E, A> IO<S, E, A> error(E value) {
+    return new IO<>(Mono.just(Either.left(value)));
+}
+```
+
+Si on veut pouvoir pousser des événements, il faut également une méthode pour pousser des logs en plus de la valeur :
+```java
+public static <S, E, A> IO<S, E, A> create(List<S> log, A value) {
+    return new IO<>(Mono.just(Either.right(new Writer<>(log, value))));
+}
+```
+
+Pour valider notre monade, il faut vérifier les lois. Pour ça on va utiliser jqwik, une lib de property based testing.
+
+### Identité à gauche
+
+La règle à respecter est `unit(x).flatMap(f) == f(x)`.
+
+Cette loi doit fonctionner avec un succès, mais aussi en cas d'erreur.
+
+Le cas nominal :
+```java
+@Property
+// Pour n'importe quel entier :
+void leftIdentityOk(@ForAll Integer integer) {
+    Function<Integer, IO<String, String, String>> f = (Integer intValue) -> {
+            int i = intValue * 2;
+            return IO.create(List.of("A", "B"), String.valueOf(i));
+        };
+
+    IO<String, String, String> result1 = IO.<String, String, Integer>succeed(integer).flatMap(f);
+    IO<String, String, String> result2 = f.apply(integer);
+
+    assertThat(result1.run().block()).isEqualTo(result2.run().block());
+}
+```
+
+Le cas ou on obtiendrait une erreur
+```java
+@Property
+// Pour n'importe quel entier :
+void leftIdentityKo(@ForAll Integer integer) {
+    Function<Integer, IO<String, String, String>> fko = (Integer intValue) -> {
+        int i = intValue * 2;
+        return IO.error("Oups");
+    };
+    IO<String, String, String> result1 = IO.<String, String, Integer>succeed(integer).flatMap(fko);
+    IO<String, String, String> result2 = fko.apply(integer);
+
+    assertThat(result1.run().block()).isEqualTo(result2.run().block());
+}
+```
+
+### Identité à droite
+
+La règle à respecter est `m.flatMap(unit) == m`. Comme pour l'identité à gauche, on va aussi tester les cas ou notre `IO` termine en erreur.
+
+
+```java
+@Property
+void rightIdentityOk(@ForAll Integer integer) {
+    IO<String, String, Integer> result1 = IO.succeed(integer);
+
+    IO<String, String, Integer> result2 = result1.flatMap(i -> IO.succeed(i));
+
+    assertThat(result1.run().block()).isEqualTo(result2.run().block());
+}
+```
+
+Le cas d'erreur :
+
+```java
+
+@Property
+void rightIdentityKo(@ForAll Integer integer) {
+    IO<String, String, Integer> result1 = IO.error("Oups");
+
+    IO<String, String, Integer> result2 = result1.flatMap(i -> IO.succeed(i));
+
+    assertThat(result1.run().block()).isEqualTo(result2.run().block());
+}
+```
+
+
+### Associativité
+
+La règle à respecter est `m.flatMap(f).flatMap(g) == m.flatMap(x ⇒ f(x).flatMap(g))`
+
+Le cas de succès :
+
+```java
+
+@Property
+void associativity(@ForAll Integer integer) {
+
+    Function<Integer, IO<String, String, String>> f = (Integer intValue) -> {
+        int i = intValue * 2;
+        return IO.create(List.of("A", "B"), String.valueOf(i));
+    };
+
+    Function<String, IO<String, String, String>> f2 = (String strValue) -> {
+        String i = strValue.substring(0, strValue.length() / 2);
+        return IO.create(List.of("C", "D"), i);
+    };
+
+    IO<String, String, Integer> m = IO.succeed(integer);
+
+    IO<String, String, String> result1 = m.flatMap(f).flatMap(f2);
+    IO<String, String, String> result2 = m.flatMap(i -> f.apply(i).flatMap(f2));
+
+    assertThat(result1.run().block()).isEqualTo(result2.run().block());
+}
+```
+
+Premier cas d'erreur :
+
+```java
+@Property
+void associativityKO1(@ForAll Integer integer) {
+    Function<String, IO<String, String, String>> f2 = (String strValue) -> {
+        String i = strValue.substring(0, strValue.length() / 2);
+        return IO.create(List.of("C", "D"), i);
+    };
+
+    IO<String, String, Integer> m = IO.error("Oups");
+
+    IO<String, String, String> result1 = m.flatMap(f).flatMap(f2);
+    IO<String, String, String> result2 = m.flatMap(i -> f.apply(i).flatMap(f2));
+
+    assertThat(result1.run().block()).isEqualTo(result2.run().block());
+}
+```
+
+Deuxième cas d'erreur :
+
+```java
+@Property
+void associativityKO2(@ForAll Integer integer) {
+    Function<String, IO<String, String, String>> f2 = (String strValue) -> {
+        String i = strValue.substring(0, strValue.length() / 2);
+        return IO.create(List.of("C", "D"), i);
+    };
+    Function<Integer, IO<String, String, String>> fko = (Integer intValue) -> {
+        int i = intValue * 2;
+        return IO.error("Oups");
+    };
+
+    IO<String, String, Integer> m = IO.succeed(integer);
+
+    IO<String, String, String> result1 = m.flatMap(fko).flatMap(f2);
+    IO<String, String, String> result2 = m.flatMap(i -> fko.apply(i).flatMap(f2));
+
+    assertThat(result1.run().block()).isEqualTo(result2.run().block());
+}
+```
+
+Troisième cas d'erreur :
+
+```java
+@Property
+void associativityKO3(@ForAll Integer integer) {
+    Function<Integer, IO<String, String, String>> f = (Integer intValue) -> {
+        int i = intValue * 2;
+        return IO.create(List.of("A", "B"), String.valueOf(i));
+    };
+    Function<String, IO<String, String, String>> f2Ko = (String strValue) -> {
+        return IO.error("Oups");
+    };
+    IO<String, String, Integer> m = IO.succeed(integer);
+
+    IO<String, String, String> result1 = m.flatMap(f).flatMap(f2Ko);
+    IO<String, String, String> result2 = m.flatMap(i -> f.apply(i).flatMap(f2Ko));
+
+    assertThat(result1.run().block()).isEqualTo(result2.run().block());
+}
+```
+
+Les tests passent, on a écrit notre première monade !
+
+## Polir un peu l'API
+
+En l'état notre `IO` n'est pas très utilisable, on va ajouter quelques fonctions supplémentaires :
+
+* `map` pour appliquer une fonction de transformation sur le contenu
+* `mapError` pour appliquer une fonction de transformation sur les erreurs
+* `product` pour combiner avec un autre `IO`
+* Des factory pour créer un `IO` dans différents contextes
+
+
+### Transformer les succès et les erreurs
+
+Pour map c'est facile, on s'appuie sur `flatMap` :
+```java
+public <B> IO<S, E, B> map(Function<A, B> f) {
+    return this.flatMap(a -> IO.succeed(f.apply(a)));
+}
+```
+
+Pour `mapError`, il faut tricoter un peu plus :
+```java
+public <E1> IO<S, E1, A> mapError(Function<E, E1> f) {
+    return new IO<>(this.underlying.map(either ->
+        switch (either) {
+            case Either.Left(var e) -> Either.left(f.apply(e));
+            case Either.Right(var a) -> Either.right(a);
+        }
+    ));
+}
+```
+
+### Combiner
+
+Ici, on va combiner les succès, mais aussi les erreurs. Si ça se passe mal, on voudrait pouvoir récupérer tous les problèmes d'un coup :
+
+```java
+public static <S, E, A, B, C> IO<S, List<E>, C> product(IO<S, E, A> ioA, IO<S, E, B> ioB, BiFunction<A, B, C> combinator) {
+
+    // On définie un tuple local pour le switch
+    record Tuple<A, B>(A a, B b) {}
+
+    return new IO<>(ioA.underlying.flatMap(mayBeA ->
+        ioB.underlying.map(mayBeB ->
+            // Petite astuce : Le switch avec le tuple permet de gérer tous les cas
+            switch (new Tuple<>(mayBeA, mayBeB)) {
+
+                // Les 2 en succès : on combine les logs et les succès :
+                case Tuple(Either.Right(var a), Either.Right(var b)) ->  Either.right(
+                        new Writer<>(
+                            Stream.concat(a.log().stream(), b.log().stream()).toList(),
+                            combinator.apply(a.value(), b.value())
+                        )
+                );
+                // 1 des 2 en erreur : une liste d'une erreur
+                case Tuple(Either.Left(var a), Either.Right(var b)) ->  Either.left(List.of(a));
+                // 1 des 2 en erreur : une liste d'une erreur
+                case Tuple(Either.Right(var a), Either.Left(var b)) ->  Either.left(List.of(b));
+                // les 2 en erreur : une liste de 2 erreurs
+                case Tuple(Either.Left(var a), Either.Left(var b)) ->  Either.left(List.of(a, b));
+            }
+        )
+    ));
+}
+```
+
+On peut ensuite écrire les méthodes de combinaison pour plus d'`IO` en utilisant les méthodes existantes :
+
+```java
+public static <S, E, A, B, C, D> IO<S, List<E>, D> product(IO<S, E, A> ioA, IO<S, E, B> ioB, IO<S, E, C> ioC, Function3<A, B, C, D> combinator) {
+    record Tuple<A, B>(A a, B b) {}
+    return product(
+                // On stocke le résultat dans un Tuple temporairement
+                product(ioA, ioB, Tuple::new),
+                // Pour combiner 2 IOs il faut le même côté gauche donc on passe de E à List<E> :
+                ioC.mapError(List::of),
+                // On récupère le tuple et la valeur : on applique la fonction :
+                (a, b) -> combinator.apply(a.a(), a.b(), b)
+            )
+            // On se retrouve avec une List<List<E>> donc on aplatit
+            .mapError(l -> l.stream().flatMap(e -> e.stream()).toList());
+}
+```
+
+### Ajouter un événement
+
+Il faut quand même pouvoir ajouter des événements !
+
+```java
+public IO<S, E , A> write(S log) {
+    return new IO<>(this.underlying.map(either ->
+            switch (either) {
+                case Either.Left(var e) -> Either.left(e);
+                case Either.Right(var a) -> Either.right(new Writer<>(
+                        Stream.concat(
+                                a.log().stream(),
+                                Stream.of(log)
+                        ).toList(),
+                        a.value()
+                ));
+            }
+    ));
+}
+```
+
+### Intégration avec le reste du monde
+
+Voici quelques exemples de création d'`IO` à partir de différentes valeurs.
+
+À partir d'un `Optional`, on veut donner une raison à l'absence de valeur :
+
+```java
+public static <S, E, A> IO<S, E, A> fromOption(Optional<A> value, Supplier<E> onEmpty) {
+    return new IO<>(Mono.just(value
+            .map(v -> Either.<E, Writer<S, A>>right(new Writer<>(List.<S>of(), v)))
+            .orElse(Either.left(onEmpty.get()))
+    ));
+}
+```
+
+Même chose pour un `Mono<Optional<?>>` :
+
+```java
+public static <S, E, A> IO<S, E, A> fromOptionM(Mono<Optional<A>> value, Supplier<E> onEmpty) {
+    return new IO<>(value.map(opt -> opt
+            .map(v -> Either.<E, Writer<S, A>>right(new Writer<>(List.<S>of(), v)))
+            .orElse(Either.left(onEmpty.get()))
+    ));
+}
+```
+
+On peut créer une instance à partir d'un `Mono` :
+
+```java
+public static <S, E, A> IO<S, E, A> fromMono(Mono<A> value) {
+    return new IO<>(value.map(v -> Either.right(new Writer<>(List.of(), v))));
+}
+```
+
+Etc ...
+
+
+## Le code en action !
+
+On va reprendre le même exemple que dans l'article précédent, mais cette fois en utilisant notre nouveau jouet.
+
+On est dans un context reactif donc le repo devient :
+
+```java
+interface UtilisateursRepository {
+    Mono<Optional<Utilisateur>> rechercherParId(String id);
+    Mono<Utilisateur> mettreAJour(Utilisateur utilisateur);
+}
+```
+
+Les méthodes de validation ne changent pas beaucoup :
+
+```java
+static IO<Event, PersonErrors, Tuple0> verifierEmail(Utilisateur utilisateur) {
+    if (Objects.nonNull(utilisateur.email()) && !EMAIL_REGEX.matcher(utilisateur.email()).matches()) {
+        return IO.error(PersonErrors.create(new UtilisateurError.EmailFormatNonValide()));
+    } else {
+        return IO.succeed(Tuple());
+    }
+}
+```
+
+Le service devient :
+
+```java
+public IO<Event, PersonErrors, Utilisateur> mettreAJour(String id, Utilisateur utilisateur) {
+
+    // On commence par gérer le retour du repo qui est un Mono<Optional>
+    return IO.<Event, PersonErrors, Utilisateur>fromOptionM(
+                    utilisateursRepository.rechercherParId(id),
+                    // Si c'est vide, on retourne une erreur :
+                    () -> PersonErrors.create(new UtilisateurError.UtilisateurInexistant())
+            )
+            .flatMap(personneExistante ->
+                    // On passe la validation
+                    IO.product(
+                        verifierEmail(utilisateur),
+                        verifierDateDePermis(utilisateur),
+                        verifierDateNaissance(utilisateur),
+                        (a, b, c) -> utilisateur
+                    )
+                    // On combine les erreurs
+                    .mapError(errors -> errors.stream().reduce(PersonErrors::combineAvec).get())
+                    .flatMap(u -> {
+                        Utilisateur utilisateurAvecId = u.withId(id);
+                        // On persiste
+                        return IO.<Event, PersonErrors, Utilisateur>fromMono(utilisateursRepository.mettreAJour(utilisateurAvecId))
+                                // On ajoute notre événement
+                                .write(new UtilisateurUpdated(utilisateurAvecId));
+                    })
+            );
+}
+```
+
+Le code du controller devient :
+
+```java
+public Mono<ServerResponse> update(ServerRequest request) {
+    String id = request.pathVariable("id");
+    return request
+            .bodyToMono(Utilisateur.class)
+            .flatMap(utilisateur ->
+                utilisateurs.mettreAJour(id, utilisateur)
+                    .run()
+                    .flatMap(either ->
+                            switch (either) {
+                                case Either.Left(var errors) -> ServerResponse.badRequest().bodyValue(errors);
+                                case Either.Right(var ok) ->
+                                        publishEvent(ok.log())
+                                            .then(ServerResponse.ok().bodyValue(ok.value()));
+                            }
+                    )
+            );
+}
+```
+
+Ici, la publication des événements se fait dans le controller ce qui n'est certainement pas une bonne idée. Bien évidemment, on fera mieux dans notre projet.
+
+Avec ce genre de structure, on peut facilement orchestrer plusieurs traitements dans un contexte transactionnel,
+à la fin, on aura soit un succès avec un état et des événements, soit une erreur.
+* en cas de succès, on commit et on publie les événements
+* en cas d'erreur, on rollback
+
+On aurait du code avec cette forme :
+
+```java
+Mono<Utilisateur> result = inTransaction(tx ->
+    utilisateurs.mettreAJour(tx, id, utilisateur)
+        .flatMap(u -> comptesEnBanque.valider(u, compte))
+        .flatMap(u -> notifications.envoyer(u))
+        .run()
+        .flatMap(either ->
+                switch (either) {
+                    case Either.Left(var errors) -> tx.rollback().then(Mono.error(new ValidationError(errors)));
+                    case Either.Right(var ok) ->
+                            tx.commit()
+                                // On publie les événements de tous les traitements métier
+                                .then(publishEvent(ok.log()))
+                                .thenReturn(ok.value());
+                }
+        )
+);
+```
+
+## Conclusion
+
+Si vous êtes arrivé jusqu'ici et que vous êtes à l'aise avec tous les concepts abordés, je vous donne votre ceinture noire de fonctionnel : c'est le début officiel de votre apprentissage en prog fonctionelle.
+
+Si vous êtes vraiment fan de cette approche et que vous voulez aller plus loins, il faudra changer de langage et faire du scala ou du haskell.
+
+<a href="https://impurepics.com/posts/2019-02-21-how-to-introduce-fp.html" target="_blank">
+    <img src="https://imgur.com/KXG8YSK.png" />
+</a>
+
+Si vous trouvez tout ça overkill, vous pouvez seulement conserver certains aspects. Quelques exemples :
+
+* immutabilité à l'exterieur des méthodes, mais mutabilité dans le body des méthodes
+* `Either` pour empiler les règles de gestion mais on lève une checked exception à la fin
+* etc
+
+Chacun met le curseur où il le souhaite !
