@@ -1,6 +1,6 @@
 ---
 slug: functionnal-programming-sideeffect
-title: prog fonct en java - effets de bord
+title: Prog fonct en java - effets de bord
 authors: [adelegue]
 tags: [patterns, java, prog-fonctionnelle]
 ---
@@ -10,7 +10,8 @@ Cette fois-ci, on va aller plus loins, en traitant : les exceptions, les IO, les
 
 {/* truncate */}
 
-Disclaimer : cet article sera truffé d'inexactitudes et risque de faire bondir les puristes fonctionnels. Ici le but est de vulgariser certains concepts pas d'offrir une démonstration mathématique.
+Disclaimer : cet article sera truffé d'inexactitudes et risque de faire bondir les puristes fonctionnels.
+Ici le but est de vulgariser certains concepts, pas d'offrir une démonstration mathématique.
 
 ## L'instant musical
 
@@ -265,7 +266,7 @@ assertThat(stringTry).isEqualTo(result);
 
 On sait chaîner des traitements, transformer des valeurs, maintenant, on voudrait combiner des valeurs.
 
-Pour ça, en scala dans `cats`[https://typelevel.org/cats] on a la méthode `product`. À noter que ce concept de "produit" n'existe pas directement dans vavr mais est utilisable quand dans les monades.
+Pour ça, en scala dans `cats`[https://typelevel.org/cats] on a la méthode `product`. À noter que ce concept de "produit" n'existe pas directement dans vavr mais il est utilisable de base quand on a une monade.
 
 Si on devait l'écrire, la méthode `product` aurait cette forme en java, par exemple sur un `Try` :
 
@@ -324,18 +325,20 @@ Qui n'a pas eu envie de glisser le mot monade dans une conversation ?
 
 ![Snob](img/img.png)
 
-En java, on ne peut pas vraiment créer de l'outillage autour de ces concepts, comme cela est fait dans d'autres langages.
+En java, on ne peut pas vraiment créer d'outillage autour de ces concepts, comme cela est fait dans d'autres langages.
 Est-que cette connaissance sera seulement de la culture générale ?
 
-Personnellement, je trouve que le fonctionnel aide à structurer sa pensée quand on doit écrire du code. On va réfléchir à structurer et composer nos traitements en utilisant les différents comportements : composition, transformation, produit, etc.
+Personnellement, je trouve que les concepts fonctionnels aident à structurer sa pensée quand on doit écrire du code. On va réfléchir à structurer et composer nos traitements en utilisant les différents comportements : composition, transformation, produit, etc.
 
 En java, on aime bien les builders, eh bien en quelque sorte, on peut voir la programmation fonctionnelle comme un builder de programme dans lequel, on va décrire ce que le programme doit faire en combinant nos petites pièces.
-Les notions de monades, de foncteurs, de foncteurs applicatifs vont nous aider à savoir comment combiner nos traitements.
+Les notions de monades, de foncteurs, de foncteurs applicatifs vont nous aider à savoir comment combiner nos pièces entre elles.
 
 Un autre aspect intéressant, c'est que régulièrement,
 je vois passer des nouvelles lib pour résoudre des problèmes avec des approches parfois folkloriques,
 où finalement, on aurait pu résoudre le même problème avec par ex une approche monadique ou autre pattern fonctionnel, et c'est bien dommage.
-Un des avantages des patterns fonctionnels, c'est qu'ils sont éprouvés et basés sur des fondations solides. Autant ne pas réinventer la roue.
+Un des avantages des patterns fonctionnels, c'est qu'ils sont éprouvés et basés sur des fondations solides et en plus déclinables quel que soit le langage.
+
+Autant ne pas réinventer la roue.
 
 ## Mise en pratique
 
@@ -345,7 +348,10 @@ on va prendre un exemple assez simple : la création d'une personne avec validat
 On va partir de la classe suivante
 
 ```java
-record Utilisateur(String id, String nom, LocalDate dateNaissance, LocalDate datePermisConduire, String email) {}
+record Utilisateur(String id, String nom,
+                   LocalDate dateNaissance,
+                   LocalDate datePermisConduire,
+                   String email) {}
 ```
 
 On va écrire un service qui doit mettre à jour cet utilisateur uniquement s'il est valide.
@@ -395,7 +401,7 @@ public record PersonErrors(List<UtilisateurError> errors) {
         return new PersonErrors(List.of(error));
     }
 
-    // Ici on peut merger 2 stack d'erreurs ensemble
+    // Ici on peut merger 2 stacks d'erreurs ensemble
     public PersonErrors combineAvec(PersonErrors other) {
         return new PersonErrors(this.errors().appendAll(other.errors()));
     }
@@ -406,8 +412,9 @@ On a également un repository qui permet de lire et de persister en base :
 
 ```java
 interface UtilisateursRepository {
-    // Comme la personne n'est peut-être pas, on retourne un Option :
+    // Comme la personne n'est peut-être pas, on retourne un `Option` :
     Option<Utilisateur> rechercherParId(String id);
+
     Utilisateur mettreAJour(Utilisateur utilisateur);
 }
 ```
@@ -458,36 +465,49 @@ Maintenant, on va orchestrer tout ça dans notre service :
 
 ```java
 class Utilisateurs {
-		private final UtilisateursRepository utilisateursRepository;
+    private final UtilisateursRepository utilisateursRepository;
 
-		public Utilisateurs(UtilisateursRepository utilisateursRepository) {
-			this.utilisateursRepository = utilisateursRepository;
-		}
+    public Utilisateurs(UtilisateursRepository utilisateursRepository) {
+        this.utilisateursRepository = utilisateursRepository;
+    }
 
-		public Either<PersonErrors, Utilisateur> mettreAJour(String id, Utilisateur utilisateur) {
+    public Either<PersonErrors, Utilisateur> mettreAJour(String id, Utilisateur utilisateur) {
 
-            // Recherche de la personne existante en base :
-			Option<Utilisateur> mayBePerson = utilisateursRepository.rechercherParId(id);
-			return mayBePerson
-                    // On passe d'un `Option` à un `Either`, en donnant un sens à l'absence de valeur :
-					.toEither(PersonErrors.create(new UtilisateurError.UtilisateurInexistant()))
-					.flatMap(personneExistante ->
-                            // On passe toutes les règles et on collecte soit une liste d'erreur, soit une liste de succès
-							Either.sequence(List(
-									verifierEmail(utilisateur),
-									verifierDateDePermis(utilisateur),
-									verifierDateNaissance(utilisateur)
-							))
-                            // On combine toutes les erreurs ensemble
-							.mapLeft(errors -> errors.reduce(PersonErrors::combineAvec))
-							// Si c'est good, on persiste
-                            .map(any ->
-								utilisateursRepository.mettreAJour(utilisateur.withId(id))
-							)
-					);
-		}
+        // Recherche de la personne existante en base :
+        Option<Utilisateur> mayBePerson = utilisateursRepository.rechercherParId(id);
+        return mayBePerson
+            // On passe d'un `Option` à un `Either`, en donnant un sens à l'absence de valeur :
+            .toEither(PersonErrors.create(new UtilisateurError.UtilisateurInexistant()))
+            .flatMap(personneExistante ->
+                    // On passe toutes les règles et on collecte soit une liste d'erreur, soit une liste de succès
+                    Either.sequence(List(
+                            verifierEmail(utilisateur),
+                            verifierDateDePermis(utilisateur),
+                            verifierDateNaissance(utilisateur)
+                    ))
+                    // On combine toutes les erreurs ensemble
+                    .mapLeft(errors -> errors.reduce(PersonErrors::combineAvec))
+                    // Si c'est good, on persiste
+                    .map(any ->
+                        // L'utilisateur est immuable, on met à jour son id, et on récupère une nouvelle instance
+                        utilisateursRepository.mettreAJour(utilisateur.withId(id))
+                    )
+            );
+    }
 }
 ```
+
+Je ne sais pas si c'est votre avis, mais je trouve la composition des règles assez lisible. Ici, c'est la lib de base qui est utilisée, mais on pourrait, si on le voulait, extraire le `Either.sequence(List())` dans une classe utilitaire pour avoir des termes plus métier.
+Par ex :
+```java
+Regles.combiner(
+    verifierEmail(utilisateur),
+    verifierDateDePermis(utilisateur),
+    verifierDateNaissance(utilisateur)
+)
+```
+A chacun de faire comme il le sent, mais les fondations sont là !
+
 
 Il reste à écrire le controller rest :
 
@@ -518,3 +538,11 @@ Comme évoqué précédemment, throw + catch équivaut à un GOTO et casse le fl
 Personnellement, j'aime bien traiter les erreurs métier avec le côté gauche de l'either pour que ça termine en 400.
 La gestion des erreurs métier devient facile à suivre de méthodes en méthodes jusqu'au controller.
 Pour les erreurs techniques, je laisse crasher pour que ça finisse en 500.
+
+
+## Conclusion
+
+Dans cet article, nous sommes allé beaucoup plus loins dans les concepts fonctionnels.
+Même s'il existe de la théorie mathématique derrière chaque concept, il n'est pas nécessaire de connaitre toutes les lois pour savoir utiliser un `Either` ou un `Option`.
+
+À travers un exemple, certes un peu bateau, nous avons vu comment combiner plusieurs pièces pour développer un problème complet.
