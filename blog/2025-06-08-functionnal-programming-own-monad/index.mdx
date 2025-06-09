@@ -1,5 +1,5 @@
 ---
-slug: functionnal-programming-own-monad
+slug: functional-programming-own-monad
 title: Prog fonct en java - écrire sa monade
 authors: [adelegue]
 tags: [patterns, java, prog-fonctionnelle]
@@ -17,7 +17,7 @@ Si vous faites du webflux, avec du code métier, allez y les yeux fermés !
 
 ## Le use case
 
-Si vous faites du spring reactif, ça peut vite devenir la plaie de gérer du métier.
+Si vous faites du spring réactif, ça peut vite devenir la plaie de gérer du métier.
 
 Si on souhaite avoir des erreurs explicites, on peut utiliser un `Either` mais le problème, c'est qu'on se retrouve avec des `Mono<Either<E, A>>`, ce qui alourdit énormément le code.
 
@@ -195,7 +195,7 @@ void leftIdentityKo(@ForAll Integer integer) {
 
 ### Identité à droite
 
-La règle à respecter est `m.flatMap(unit) == m`. Comme pour l'identité à gauche, on va aussi tester les cas ou notre `IO` termine en erreur.
+La règle à respecter est `m.flatMap(unit) == m`. Comme pour l'identité à gauche, on va aussi tester les cas ou notre `IO` se termine en erreur.
 
 
 ```java
@@ -357,7 +357,7 @@ Ici, on va combiner les succès, mais aussi les erreurs. Si ça se passe mal, on
 ```java
 public static <S, E, A, B, C> IO<S, List<E>, C> product(IO<S, E, A> ioA, IO<S, E, B> ioB, BiFunction<A, B, C> combinator) {
 
-    // On définie un tuple local pour le switch
+    // On définit un tuple local pour le switch
     record Tuple<A, B>(A a, B b) {}
 
     return new IO<>(ioA.underlying.flatMap(mayBeA ->
@@ -569,9 +569,9 @@ Mono<Utilisateur> result = inTransaction(tx ->
 
 ## Conclusion
 
-Si vous êtes arrivé jusqu'ici et que vous êtes à l'aise avec tous les concepts abordés, je vous donne votre ceinture noire de fonctionnel : c'est le début officiel de votre apprentissage en prog fonctionelle.
+Si vous êtes arrivé jusqu'ici et que vous êtes à l'aise avec tous les concepts abordés, je vous donne votre ceinture noire de fonctionnel : c'est le début officiel de votre apprentissage en prog fonctionnelle.
 
-Si vous voulez des détails, j'avais fait une conf "spring reactif et code métier" dont le code et l'explication de texte se trouve ici https://github.com/larousso/spring-reactif-code-metier
+Si vous voulez des détails, j'avais fait une conf "spring réactif et code métier" dont le code et l'explication de texte se trouve ici https://github.com/larousso/spring-reactif-code-metier
 
 Si vous êtes vraiment fan de cette approche et que vous voulez aller plus loins, il faudra changer de langage et faire du scala ou du haskell.
 
@@ -581,7 +581,7 @@ Si vous êtes vraiment fan de cette approche et que vous voulez aller plus loins
 
 Si vous trouvez la prog fonctionnelle en java overkill, vous pouvez seulement conserver certains aspects. Quelques exemples :
 
-* immutabilité à l'exterieur des méthodes, mais mutabilité dans le body des méthodes
+* immutabilité à l'extérieur des méthodes, mais mutabilité dans le body des méthodes
 * `Either` pour empiler les règles de gestion, mais on lève une checked exception à la fin
 * etc
 
