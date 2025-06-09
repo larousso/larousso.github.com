@@ -5,7 +5,9 @@ authors: [adelegue]
 tags: [patterns, java, prog-fonctionnelle]
 ---
 
-Cette fois, on va aller encore un peu plus loins : on va écrire notre propre monade !
+Cette fois, on va aller encore un peu plus loins : on va écrire notre propre monade ! N'ayez pas peur tout est sous contrôle !
+
+Si vous faites du webflux, avec du code métier, allez y les yeux fermés !
 
 {/* truncate */}
 
@@ -17,9 +19,9 @@ Cette fois, on va aller encore un peu plus loins : on va écrire notre propre mo
 
 Si vous faites du spring reactif, ça peut vite devenir la plaie de gérer du métier.
 
-Si on souhaite avoir des erreurs explicites, on peut utiliser un `Either` mais le problème, c'est qu'on se retrouve avec des `Mono<Either<E, A>>` en permanence et, ça alourdit énormément le code.
+Si on souhaite avoir des erreurs explicites, on peut utiliser un `Either` mais le problème, c'est qu'on se retrouve avec des `Mono<Either<E, A>>`, ce qui alourdit énormément le code.
 
-Pour manipuler cette structure, il faut sans cesse manipuler 2 niveaux : le `Mono` puis le `Either` :
+Pour manipuler cette structure, il faut sans cesse manipuler 2 niveaux : le `Mono` puis le `Either`, le fameux callback hell :
 
 ```java
 Mono<Either<AppError, String>> result = ...;
@@ -43,7 +45,7 @@ record IO<E, A>(Mono<Either<E, A>> underlying) {
 }
 ```
 
-Comme on est gourmand, on va ajouter une autre capacité à notre monade, la capacité de mettre de côté des événements à publier. Comme on est encore plus gourmand, on va se passe de vavr et écrire ça en java vanilla !
+Comme on est gourmand, on va ajouter une autre capacité à notre monade, la capacité de mettre de côté des événements à publier. Comme on est encore plus gourmand, on va se passer de vavr et écrire ça en java vanilla !
 
 ## Notre super monade
 
@@ -51,7 +53,9 @@ Comme on est gourmand, on va ajouter une autre capacité à notre monade, la cap
     <img src="https://imgur.com/7wEgPe4.png" />
 </a>
 
-Tout d'abord, on commence par l'either. Depuis le jdk 21, on peut utiliser les `sealed` interface pour créer des types "union". On va pouvoir écrire l'either ainsi :
+Tout d'abord, on commence par l'`Either`.
+
+Depuis le jdk 21, on peut utiliser les `sealed` interface pour créer des types "union". On va pouvoir écrire l'`Either` ainsi :
 
 ```java
 public sealed interface Either<E, A> {
@@ -70,9 +74,9 @@ public sealed interface Either<E, A> {
 ```
 Pour le moment, on ne se prend pas la tête avec `map` et `flatMap`.
 
-Il faut ensuite qu'on écrive une structure qui permet de stacker nos événements en plus de la valuer courante. Il existe une monade qui permet de faire ça, c'est la writer monad.
+Il faut ensuite écrire une structure qui permette de mettre nos événements "de côté". Il existe une monade qui permet de faire ça, c'est la writer monad.
 
-Dans notre cas de figure, comme pour l'either, on ne va pas vraiment écrire une monade, on va seulement écrire une classe pour conserver la valeur et les événements :
+Dans notre cas de figure, comme pour l'`Either`, on ne va pas vraiment écrire une monade, on va seulement écrire une classe pour conserver la valeur et les événements :
 
 ```java
 record Writer<S, A>(List<S> log, A value) { }
@@ -96,7 +100,7 @@ Pour que ça soit une monade, il faut écrire la méthode `flatMap`. Attention, 
 public <B> IO<S, E, B> flatMap(Function<A, IO<S, E, B>> f) {
 
     Mono<Either<E, Writer<S, B>>> newValue = this.underlying.flatMap(eitherA ->
-            // On test le résultat courant :
+            // On teste le résultat courant :
             switch (eitherA) {
                 // Si il est KO, pas de question a se poser : on retourne KO
                 case Either.Left(var err) -> Mono.just(Either.<E, Writer<S, B>>left(err));
@@ -348,7 +352,7 @@ public <E1> IO<S, E1, A> mapError(Function<E, E1> f) {
 
 ### Combiner
 
-Ici, on va combiner les succès, mais aussi les erreurs. Si ça se passe mal, on voudrait pouvoir récupérer tous les problèmes d'un coup :
+Ici, on va combiner les succès, mais aussi les erreurs. Si ça se passe mal, on veut pouvoir récupérer tous les problèmes d'un coup :
 
 ```java
 public static <S, E, A, B, C> IO<S, List<E>, C> product(IO<S, E, A> ioA, IO<S, E, B> ioB, BiFunction<A, B, C> combinator) {
@@ -388,7 +392,7 @@ public static <S, E, A, B, C, D> IO<S, List<E>, D> product(IO<S, E, A> ioA, IO<S
     return product(
                 // On stocke le résultat dans un Tuple temporairement
                 product(ioA, ioB, Tuple::new),
-                // Pour combiner 2 IOs il faut le même côté gauche donc on passe de E à List<E> :
+                // Pour combiner 2 IOs, il faut le même côté gauche donc on passe de E à List<E> :
                 ioC.mapError(List::of),
                 // On récupère le tuple et la valeur : on applique la fonction :
                 (a, b) -> combinator.apply(a.a(), a.b(), b)
@@ -537,8 +541,8 @@ public Mono<ServerResponse> update(ServerRequest request) {
 
 Ici, la publication des événements se fait dans le controller ce qui n'est certainement pas une bonne idée. Bien évidemment, on fera mieux dans notre projet.
 
-Avec ce genre de structure, on peut facilement orchestrer plusieurs traitements dans un contexte transactionnel,
-à la fin, on aura soit un succès avec un état et des événements, soit une erreur.
+Avec ce genre de structure, on peut facilement orchestrer plusieurs traitements dans un contexte transactionnel.
+À la fin, on aura soit un succès avec un état et des événements, soit une erreur.
 * en cas de succès, on commit et on publie les événements
 * en cas d'erreur, on rollback
 
@@ -567,16 +571,18 @@ Mono<Utilisateur> result = inTransaction(tx ->
 
 Si vous êtes arrivé jusqu'ici et que vous êtes à l'aise avec tous les concepts abordés, je vous donne votre ceinture noire de fonctionnel : c'est le début officiel de votre apprentissage en prog fonctionelle.
 
+Si vous voulez des détails, j'avais fait une conf "spring reactif et code métier" dont le code et l'explication de texte se trouve ici https://github.com/larousso/spring-reactif-code-metier
+
 Si vous êtes vraiment fan de cette approche et que vous voulez aller plus loins, il faudra changer de langage et faire du scala ou du haskell.
 
 <a href="https://impurepics.com/posts/2019-02-21-how-to-introduce-fp.html" target="_blank">
     <img src="https://imgur.com/KXG8YSK.png" />
 </a>
 
-Si vous trouvez tout ça overkill, vous pouvez seulement conserver certains aspects. Quelques exemples :
+Si vous trouvez la prog fonctionnelle en java overkill, vous pouvez seulement conserver certains aspects. Quelques exemples :
 
 * immutabilité à l'exterieur des méthodes, mais mutabilité dans le body des méthodes
-* `Either` pour empiler les règles de gestion mais on lève une checked exception à la fin
+* `Either` pour empiler les règles de gestion, mais on lève une checked exception à la fin
 * etc
 
-Chacun met le curseur où il le souhaite !
+Chacun met son curseur là où il le souhaite !
