@@ -403,7 +403,7 @@ Produit le résultat suivant :
 }
 ```
 
-Maintenant, on aimerait également récupérer les épisodes, quand c'est une série, ainsi que le casting.
+Maintenant, on aimerait également récupérer les épisodes quand c'est une série, ainsi que le casting.
 Pour ça, on va aussi utiliser des fonctions json.
 
 L'idée est de faire un "sous select" :
@@ -756,7 +756,10 @@ L'idée, ici, c'est de collecter toutes les personnes pour lesquelles on souhait
 ```java
 
 @BatchMapping
-public Map<Person, List<Title>> titles(List<Person> persons /*Les personnes pour lesquelles on souhaite récupérer les titres*/) {
+public Map<Person, List<Title>> titles(
+        // Les personnes pour lesquelles on souhaite récupérer les titres
+        List<Person> persons
+) {
     Map<String, List<Person>> personById = persons.stream().collect(Collectors.groupingBy(p -> p.nconst()));
     // On requête tout d'un coup :
     return titleRepository.titlesByPersons(persons.stream().map(p -> p.nconst())
@@ -792,14 +795,15 @@ type Person {
 Il existe des issues de documentation et de faisabilité :
 
 https://github.com/spring-projects/spring-graphql/issues/1168
+
 https://github.com/spring-projects/spring-graphql/issues/232
 
 ### Full SQL !
 
 Dans l'ensemble les solutions précédentes sont grosso modo suffisantes.
-Sur notre projet actuel, nous utilisons la première solution, les utilisateurs gourmands en données payent le coût des temps de réponse.
+Sur notre projet actuel, nous utilisons la première solution (@SchemaMapping), les utilisateurs gourmands en données payent le coût en temps de réponse.
 
-Comme je suis joueur, je me suis demandé comment faire pour ne générer qu'une seule requête à partir de la query graphql ?
+Comme je suis joueur, je me suis demandé comment faire pour ne générer qu'une seule requête SQL à partir de la query graphql ?
 
 Eh bien voici une proposition de solution, attention, le code devient un peu plus compliqué !
 
@@ -850,7 +854,7 @@ record TitleNode(Integer level, RoleNode castNode, EpisodeNode episodeNode) impl
     public Field<JSONB> select(Field<String> selectAlias) {
 
         Field<JSONB> castField = Optional.ofNullable(castNode).map(n -> {
-            // Si le casting doit être remonté, on va générer un morceau de requête ...
+            // Si le casting doit être remonté, on va générer un morceau de requête...
             // On fabrique, un alias à partir du level :
             Field<String> castAlias = field("cast"+level, String.class);
             // On retourne le morceau de select :
@@ -861,13 +865,13 @@ record TitleNode(Integer level, RoleNode castNode, EpisodeNode episodeNode) impl
                         where {1}.tconst = {2}.tconst
                     )))
                     """, JSONB.class,
-                    // Ici on génère le select du titre en passant l'alias courant au noeud
+                    // Ici, on génère le select du titre en passant l'alias courant au nœud
                     n.select(castAlias),
                     castAlias,
                     selectAlias
             );
         })
-        // Si pas noeud, on retourne un objet json avec rien dedans :
+        // Si pas nœud, on retourne un objet json avec rien dedans :
         .orElse(field("""
                 jsonb_build_object('cast', json_build_array())""", JSONB.class)
         );
@@ -885,7 +889,7 @@ record TitleNode(Integer level, RoleNode castNode, EpisodeNode episodeNode) impl
         }).orElse(field("""
                 jsonb_build_object('episodes', json_build_array())""", JSONB.class));
 
-        // A la fin on retourne le morceau de select d'un Titre qui se compose :
+        // À la fin, on retourne le morceau de select d'un Titre qui se compose :
         // Du titre, du cast et des episodes :
         return field("""
                 row_to_json({0})::jsonb ||
@@ -1072,7 +1076,7 @@ offset 0 limit 10
 
 Dernier aspect : la testabilité !
 
-Il n'est pas forcément évident de bosser avec des `SelectedFields` dans les tests. Pour ça, j'ai écrit un petit boût de code boiler plate qui permet d'avoir le `DataFetchingEnvironment` pour une requête graphql donnée.
+Il n'est pas forcément évident de bosser avec des `SelectedFields` dans les tests. Pour ça, j'ai écrit un petit boût de code boilerplate qui permet d'avoir le `DataFetchingEnvironment` pour une requête graphql donnée.
 
 Le code se trouve [ici](https://github.com/larousso/spring-graphql-plain-sql/blob/main/src/test/java/fr/larousso/graphql/GraphqlHelper.java) et il est utilisable ainsi :
 
@@ -1141,8 +1145,8 @@ Je vous ai présenté 3 approches qui peuvent d'ailleurs êtres complémentaires
 Les approches proposées ne sont d'ailleurs pas des approches propres au fait de faire du SQL, mais bien des stratégies de résolution de query graphql.
 En JPA, on serait probablement confronté aux mêmes types de problématiques.
 
-L'utilisation des features JSON de posgtresql sont très pratiques pour ces genres de usecases et permettent de très simplement de gérer les aspects de pagination, filtres etc.
+L'utilisation des features JSON de posgtresql sont très pratiques pour ce genre de use-case et permettent de très simplement de gérer les aspects de pagination, filtres, etc.
 
 La dernière proposition (full SQL) est la plus complexe, mais probablement la plus performante.
 
-A vous de faire votre choix !
+À vous de faire votre choix !
