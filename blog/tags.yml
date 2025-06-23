@@ -33,3 +33,13 @@ patterns:
   label: Patterns
   permalink: /patterns
   description: Patterns
+
+graphql:
+  label: Graphql
+  permalink: /graphql
+  description: Graphql
+
+postgresql:
+  label: Postgresql
+  permalink: /postgresql
+  description: Postgresql
