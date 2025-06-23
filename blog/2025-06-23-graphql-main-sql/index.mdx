@@ -30,7 +30,7 @@ flowchart LR
     Une personne : acteur, réal etc
     ]
     title_akas[**title_akas**
-    Traductions et titres altérnatifs
+    Traductions et titres alternatifs
     ]
     title_basics[**title_basics**
     Titre de film, séries
@@ -40,7 +40,7 @@ flowchart LR
     title_episode[**title_episode**
     N° Saison, N°Episode]
     title_principals[**title_principals**
-    Distribution : acteurs, real etc
+    Distribution : acteurs, réal etc
     ]
     title_ratings
 
@@ -505,7 +505,7 @@ limit 10;
 ### Intégration dans springboot
 
 Pour l'intégration de cette reqête dans springboot, on va utiliser jooq.
-Jooq propose plusieurs altérnatives, on peut aller d'un builder de query typesafe à des requêtes sous forme de texte, voir mixer tout ça ensemble.
+Jooq propose plusieurs alternatives, on peut aller d'un builder de query typesafe à des requêtes sous forme de texte, voir mixer tout ça ensemble.
 
 Ici, on va utiliser la version texte. On va avoir un repository qui ressemble à :
 
@@ -744,13 +744,13 @@ public List<Title> knownFor(Person person) {
 }
 ```
 
-Cette approche fonctionne très bien, mais, elle a un inconvenient : on fait une requête à la base par personne et par champs.
+Cette approche fonctionne très bien, mais, elle a un inconvénient : on fait une requête à la base par personne et par champ.
 
 Ceci peut avoir des impacts d'un point de vue temps de réponse et sollicitation à la base.
 
 ### Utiliser l'annotation `@BatchMapping`
 
-L'annotation `@BatchMapping`, est un short cut vers la notion de `BatchLoader` présent dans la lib `graphql-java` sur laquelle s'appuie spring.
+L'annotation `@BatchMapping`, est un shortcut vers la notion de `BatchLoader` présent dans la lib `graphql-java` sur laquelle s'appuie spring.
 
 L'idée, ici, c'est de collecter toutes les personnes pour lesquelles on souhaite récupérer des données. On va ensuite tout requêter d'un coup :
 
@@ -1146,7 +1146,7 @@ Je vous ai présenté 3 approches qui peuvent d'ailleurs êtres complémentaires
 Les approches proposées ne sont d'ailleurs pas des approches propres au fait de faire du SQL, mais bien des stratégies de résolution de query graphql.
 En JPA, on serait probablement confronté aux mêmes types de problématiques.
 
-L'utilisation des features JSON de posgtresql sont très pratiques pour ce genre de use-case et permettent de très simplement de gérer les aspects de pagination, filtres, etc.
+Les features JSON de posgtresql sont très pratiques pour ce genre de use-case et permettent de très simplement de gérer les aspects de pagination, filtres, etc.
 
 La dernière proposition (full SQL) est la plus complexe, mais probablement la plus performante.
 
