@@ -18,7 +18,7 @@ Le sharding est un algo très utilisé dans le monde des systèmes distribués. 
 ## Le sharding
 
 Le sharding sert à repartir des données ou des traitements uniformément.
-Le cas d'école est le suivant : on a identifiants qu'on souhaite répartir vers des nœuds d'un cluster (ou bien des threads ou n'importe quoi).
+Le cas d'école est le suivant : on a des identifiants qu'on souhaite répartir vers des nœuds d'un cluster (ou bien des threads ou n'importe quoi).
 Ce qu'on veut, c'est
 * Pouvoir répartir uniformément les identifiants entre les nœuds du cluster
 * S'assurer qu'un même identifiant ira toujours sur le même nœud
@@ -27,7 +27,7 @@ Comment on fait ça ?
 
 Imaginons que nous avons 10 nœuds dans notre cluster et que nous avons les identifiants numérotés de 1 à 1000.
 On pourrait se dire que les ids de 1 à 100 iront sur le nœud 1, de 101 à 200 sur le nœud 2, les id de 201 à 300 sur le nœud 3 etc.
-Ça, c'est la version simple et facile, on va aller plus loins.
+Ça, c'est la version simple et facile, on va aller plus loin.
 
 Quel que soit le nombre d'id, avec des id de type texte, on voudrait répartir uniformément les ids sur les nœuds.
 
