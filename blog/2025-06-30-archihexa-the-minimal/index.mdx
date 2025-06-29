@@ -7,6 +7,14 @@ tags: [patterns, java, architecture]
 
 import ReactPlayer from 'react-player';
 import select from './selection-verticale-2.mov';
+import priseenchargedecolis from './priseenchargedecolis.png'
+import suivicolis from './suivi.png'
+import hive from './hive.png'
+import ntiers from './ntiers.png'
+import hexa from './hexa.png'
+import ntierscolis from './ntierscolis.png'
+import ntierscolisenfeu from './ntierscolisenfeu.png'
+import packages from './package.png'
 
 L'architecture hexagonale est probablement mon défaut que je setup un projet.
 Quand on suit certaines précos, cette architecture peut sembler intimidante et compliquée, au point que se dit tanpis, je vais commencer simplement / autrement, et on verra après.
@@ -34,14 +42,8 @@ L'archi n-tiers est probablement l'archi logicielle la plus répendue. On la ret
 * logique métier
 * accès aux données
 
-```mermaid
-flowchart LR
-    controller[Présentation]
-    service[Service / Logique métier]
-    dao[Accès aux données]
+<img src={ntiers} width={500}/>
 
-    controller --- service --- dao
-```
 
 Sur le papier, ça a l'air vraiment pas mal.
 Comme les applications ne sont jamais aussi simple, quand on fait grossir, on peut facilement réutiliser nos composants d'accès aux données.
@@ -50,44 +52,14 @@ On suit le DRY (don't repeat yourself) et ça, c'est cool !
 
 Avec notre use case, on aura :
 
-```mermaid
-flowchart LR
-    colisRepository[ColisDao]
-    personneRepository[PersonneDao]
-    suiviRepository[SuiviDao]
-    servicePriseEnCharge[ServicePriseEncharge]
-    serviceSuivi[ServiceDeSuivi]
-    controllerPriseEnCharge[ControllerPriseEnCharge]
-    controllerSuivi[ControllerSuivi]
 
-    controllerPriseEnCharge --- servicePriseEnCharge --- colisRepository
-                                servicePriseEnCharge --- personneRepository
-    controllerSuivi --- serviceSuivi --- colisRepository
-                        serviceSuivi --- personneRepository
-                        serviceSuivi --- suiviRepository
-```
+<img src={ntierscolis} width={700}/>
 
 Malheureusement, on vient de créer un monolithe spaghetti assez difficile maintenir et l'architecture n-tiers ne nous protège pas du tout de ça.
 
 Dans l'architecture ci-dessus, si on touche un aspect lié au colis, on impacte toute l'application ! Ça, c'est un vrai problème pour faire évoluer notre application, on part avec une dette technique énorme.
 
-```mermaid
-flowchart LR
-    colisRepository[ColisDao]:::impact
-    personneRepository[PersonneDao]
-    suiviRepository[SuiviDao]
-    servicePriseEnCharge[ServicePriseEncharge]:::impact
-    serviceSuivi[ServiceDeSuivi]:::impact
-    controllerPriseEnCharge[ControllerPriseEnCharge]:::impact
-    controllerSuivi[ControllerSuivi]:::impact
-
-    controllerPriseEnCharge --- servicePriseEnCharge --- colisRepository
-                                servicePriseEnCharge --- personneRepository
-    controllerSuivi --- serviceSuivi --- colisRepository
-                        serviceSuivi --- personneRepository
-                        serviceSuivi --- suiviRepository
-    classDef impact fill:#f96
-```
+<img src={ntierscolisenfeu} width={700}/>
 
 ### La magie des frameworks, le cauchemar du métier
 
@@ -158,14 +130,7 @@ Bien évidement, certaines problématiques énoncées ci-dessus, pourront subsis
 
 Dans l'archi hexa, on va garder un peu la même structure, on aura :
 
-```mermaid
-flowchart LR
-    controller[Présentation]
-    domaine[Domaine / Logique métier]
-    repository[Accès aux données]
-
-    controller --- domaine --- repository
-```
+<img src={hexa} width={500}/>
 
 Jusque-là, pas de quoi se taper le cul dans un seau, c'est le même schéma que tout à l'heure.
 
@@ -259,6 +224,10 @@ Je trouve que faire figurer ce découpage dans l'orga du projet embrouille. J'au
 Dans `domain`, c'est comme vous voulez ! Mais je ne ferai pas figurer de package `port`, les noms des interfaces doivent être parlant et traduire le métier sous-jacent.
 
 Il est possible de structurer le projet en modules, ceci permet d'éviter les imports malheureux de l'infra vers le métier qui pourraient exister.
+
+Voici un exemple de structure assez simple, peut-être trop !
+
+<img src={packages} width={300}/>
 
 ### Passer un context de la présentation vers l'accès aux données
 
@@ -496,7 +465,74 @@ On peut faire des upsert de masse avec cette technique, très pratique !
 
 ## On n'a pas réglé tous les problèmes !
 
+Jusqu'ici, on a parlé de l'architecture hexagonale mais, on n'a pas du tout réglé le problème d'origine : notre plat de spaghetti.
+
+Pour régler le souci et être moins sujet aux impacts des évolutions, on va aller vers une approche DDD, en se penchant dans un premier temps sur le vocabulaire et le sens des mots dans leur contexte.
+
+Tout d'abord, on peut dire que notre version d'application est un monolithe dans lequel se trouve plusieurs domaines fonctionnels :
+* la prise en charge de colis
+* le suivi des colis
+
+#### Prise en charge de colis
+
+Dans la prise en charge de colis, on entend plutôt parler de :
+* colis
+* déstinataire
+* poids / conditionnement
+* tarif
+
+Si on représente ceci par un hexagone avec à gauche l'api et à droite la spi on aurait quelque chose comme :
+
+<img src={priseenchargedecolis} width={500}/>
+
+#### Suivi de colis
+
+Dans le suivi de colis, on ne parlera plus de colis, mais de colis à suivre voir de référence. On aura le vocabulaire :
+* colis à suivre / référence de colis
+* adresse de livraison
+* tracking : coordonnées GPS
+
+L'hexagone prendra la forme suivante :
+
+<img src={suivicolis} width={500}/>
+
+Ici, on voit que le colis n'a pas la même signification dans le contexte de prise en charge et dans le contexte de suivi. On pourrait se dire qu'un colis est un colis mais :
+
+Dans le domaine "prise en charge", le colis c'est :
+* une taille
+* un poids
+* fragile ou non
+* un conditionnement
+* ...
+
+Alors que dans le domaine du suivi, le colis c'est :
+* une référence
+* un code bar
 
 
+#### On mélange et on secoue
+
+Maintenant qu'on a défini nos 2 domaines, on peut les connecter.
+
+L'adaptateur de `ColisASuivre` va dialoguer directement avec l'API de `PriseEnChargeDeColis`, il joue le rôle "d'anticorruption layer",
+c'est-à-dire qu'il va faire tampon et traduire le monde de la prise en charge de colis vers le monde du colis à suivre.
 
 
+<img src={hive} width={700}/>
+
+On appelle ce pattern le hive pattern (on obtient une ruche), c'est Thomas Pierrain qui a officialisé ce pattern. Je vous partage ce lien vers un talk qu'il fait avec Julien Topçu, qui est très bien et beaucoup plus précis que mon explication.
+
+
+Un des intérêts de ce pattern, c'est que si le projet grossit, et qu'il devient nécessaire de par exemple éclater l'équipe en 2,
+il sera facile d'également séparer le monolithe en 2 applications et de les faire communiquer par le réseau. Il suffira juste de réécrire l'adaptateur.
+
+On peut se permettre de se chercher, trouver nos domaines, sans tomber trop rapidement dans le piège des microservices.
+
+Sur le produit sur lequel je travaille principalement,
+on utilise ce pattern depuis 5/6 ans et je dois dire que le pattern tient ses promesses.
+On gère 4/5 domaines dans un monolithe et pour le moment, pas besoin de microservices.
+
+
+## Aller plus loins avec le context mapping
+
+Vous l'avez bien compris, ici, on propose une solution technique, mais le nerd de la guerre, c'est bien la découverte de ses domaines et les couplages qui peuvent exister.
