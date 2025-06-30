@@ -16,8 +16,8 @@ import ntierscolis from './ntierscolis.png'
 import ntierscolisenfeu from './ntierscolisenfeu.png'
 import packages from './package.png'
 
-L'architecture hexagonale est probablement mon défaut que je setup un projet.
-Quand on suit certaines précos, cette architecture peut sembler intimidante et compliquée, au point que se dit tanpis, je vais commencer simplement / autrement, et on verra après.
+L'architecture hexagonale est probablement mon défaut quand je setup un projet.
+Quand on suit certaines précos, cette architecture peut sembler intimidante, voir compliquée, à tel point que peut se dire : tanpis, je vais commencer simplement / autrement, et on verra après.
 
 Moi, je pense qu'au contraire, on peut commencer en archi hexa de façon simple et monter en puissance ensuite.
 Et même si on fait quelques entorses, ça sera toujours mieux que de ne pas le faire.
@@ -33,7 +33,10 @@ Et même si on fait quelques entorses, ça sera toujours mieux que de ne pas le 
 
 Pour illustrer le sujet, on va partir d'une boite de livraison, hubert claude, qui livre des colis et qui tourne dans le cloud.
 
-On a en gros 2 modules
+Il existe dans Hubert Claude, 2 grandes fonctionnalités :
+* la prise en charge du colis : avec un front web ou appli mobile utilisé dans les points de dépot, lorsqu'un client vient déposer le colis
+* le suivi de colis : utilisé par le livreur pour indiquer l'avancement et par le client pour suivre son colis
+
 
 ## L'archi n-tiers et ses problèmes
 
