@@ -42,7 +42,7 @@ L'archi n-tiers est probablement l'archi logicielle la plus répendue. On la ret
 * logique métier
 * accès aux données
 
-<img src={ntiers} width={500}/>
+<img src={ntiers} width={700}/>
 
 
 Sur le papier, ça a l'air vraiment pas mal.
@@ -130,7 +130,7 @@ Bien évidement, certaines problématiques énoncées ci-dessus, pourront subsis
 
 Dans l'archi hexa, on va garder un peu la même structure, on aura :
 
-<img src={hexa} width={500}/>
+<img src={hexa} width={700}/>
 
 Jusque-là, pas de quoi se taper le cul dans un seau, c'est le même schéma que tout à l'heure.
 
@@ -357,6 +357,69 @@ Par rapport à un DTO + mapper, les avantages sont les suivants :
 * la lib collecte les erreurs donc s'il y a plusieurs problèmes, on a tout d'un coup
 * fonctionne bien avec l'approche ["parse, don't validate"](https://larousso.github.io/blog/parse-dont-validate/) et notamment pour la collecte des erreurs.
 
+Si on utilise cette approche, on obtiendra ce genre de classe qui sera dans la couche infrastructure bien sûr :
+
+```java
+public class ColisJsonFormat {
+
+    public static JsonFormat<Colis> colisFormat() {
+        return JsonFormat.of(colisRead(), colisWrite());
+    }
+
+    private static JsonRead<Colis> colisRead() {
+        return __("id", _string(), Colis.builder()::id)
+                .and(__("reference", _string()), ColisBuilder::reference)
+                .and(__("nom", _string()), ColisBuilder::nom)
+                .and(__("prenom", _string()), ColisBuilder::prenom)
+                .and(__("adresse", adresseFormat()), ColisBuilder::adresse)
+                .map(ColisBuilder::build);
+    }
+
+    private static JsonWrite<Colis> colisWrite() {
+        return colis -> Json.obj(
+                $$("id", colis.id()),
+                $$("reference", colis.reference()),
+                $$("nom", colis.nom()),
+                $$("prenom", colis.prenom()),
+                $$("adresse", colis.adresse(), adresseFormat())
+        );
+    }
+}
+```
+
+Et ensuite pour sérialiser ou desérialiser, on fera :
+
+```java
+String json = "{ ... }";
+// JsonNode est une classe jackson pour représenter un json en java
+JsonNode jsonNode = Json.parse(json);
+// On desérialiser à partir de notre classe "JsonRead" :
+JsResult<Colis> parsing = Json.fromJson(jsonNode, ColisJsonFormat.colisFormat());
+// On obtient un résultat qui est en erreur ou succès et qu'on doit gérer
+Colis colis = parsing.fold(
+    (Seq<JsResult.Error> err) -> {
+        throw new JsonInvalidExeption(err);
+    },
+    identity()
+);
+```
+
+Dans un controller on aurait
+
+```java
+@PostMapping
+ResponseEntity<?> prendreEnCharge(@RequestBody JsonNode json) {
+    JsResult<Colis> parsing = Json.fromJson(json, ColisJsonFormat.colisFormat());
+    return parsing.fold(
+            (Seq<Error> err) -> ResponseEntity.badRequest().body(err),
+            (Colis colis) -> {
+                Colis res = this.priseEnChargeDeColis.prendreEnChargeLeColis(colis);
+                return ResponseEntity.ok(res);
+            }
+    );
+}
+```
+
 
 ### Couche d'accès aux données
 
@@ -535,4 +598,27 @@ On gère 4/5 domaines dans un monolithe et pour le moment, pas besoin de microse
 
 ## Aller plus loins avec le context mapping
 
-Vous l'avez bien compris, ici, on propose une solution technique, mais le nerd de la guerre, c'est bien la découverte de ses domaines et les couplages qui peuvent exister.
+Vous l'avez bien compris, ici, on propose une solution technique, mais le nerd de la guerre, c'est bien la découverte de nos domaines et des couplages qui peuvent exister.
+
+Pour mettre en évidence les couplages et les impacts de ces couplages, il existe [le context mapping](https://github.com/ddd-crew/context-mapping).
+
+[Cette présentation](https://www.youtube.com/watch?v=k5i4sP9q2Lk) de Michael Plöd, explique bien chaque type d'intéractions qui peuvent exister et les impacts qu'elles peuvent avoir.
+
+La notion d'anticorruption layer, évoquée précédemment est une des interactions du contexte mapping.
+
+## Conclusion
+
+C'était un peu dense !
+
+En résumé, l'archi hexagonale est mon archi par défaut et je pense que même si c'est mal fait (on fait quelques entorses sur la séparation infra / métier), c'est toujours mieux que ce si ça n'est pas fait du tout.
+
+Si vous partez sur de l'archi hexagonale, je vous conseille de faire ça simplement et si, vous ne voulez pas subir trop tôt le coût des mappers (qui n'en est probablement pas un mais c'est vrai que c'est pénible à écrire), je vous ai proposé quelques solutions pour mitiger le coût.
+
+L'architecture hexagonale ouvre la voie à d'autres patterns comme le hive, qui permet de modulariser votre monolithe et de ne pas tomber trop vite dans le piège des microservices.
+
+Voici quelques références sur certaines pratiques mises en évidence dans cet article :
+* Sur les domaines métier et le vocabulaire, cette présentation de Grégory Weinbach est très instructive : https://www.youtube.com/watch?v=qN43Dy6fGkk
+* Sur l'archi hexagonal en java / kotlin / spring, Julien Topçu fait une bonne overview : https://www.youtube.com/watch?v=-dXN8wkN0yk
+* Sur le hive pattern, Thomas Pierrain et Julien Topçu vous présentent le pattern : https://www.youtube.com/watch?v=TL_nVaOs47g
+* Sur la délimitation des domaines Josian Chevalier et Julien Topçu (encore lui ! mais il est partout !) https://www.youtube.com/watch?v=vBmMsN83ZTk
+* Sur le context mapping, une bonne overview ici par Michael Plöd, elle est en anglais : https://www.youtube.com/watch?v=k5i4sP9q2Lk
