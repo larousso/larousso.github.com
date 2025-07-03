@@ -53,14 +53,16 @@ Comme les applications ne sont jamais aussi simple, quand on fait grossir, on pe
 
 On suit le DRY (don't repeat yourself) et ça, c'est cool !
 
-Avec notre use case, on aura :
+Avec notre use-case, on aura ça, ici, on peut réutiliser nos répositories, nos modèles... DRY forever !
 
 
 <img src={ntierscolis} width={700}/>
 
 Malheureusement, on vient de créer un monolithe spaghetti assez difficile maintenir et l'architecture n-tiers ne nous protège pas du tout de ça.
 
-Dans l'architecture ci-dessus, si on touche un aspect lié au colis, on impacte toute l'application ! Ça, c'est un vrai problème pour faire évoluer notre application, on part avec une dette technique énorme.
+Dans l'architecture ci-dessus, si on touche un aspect lié au colis, on impacte toute l'application !
+
+Ça, c'est un vrai problème pour faire évoluer notre application, on part avec une dette technique énorme.
 
 <img src={ntierscolisenfeu} width={700}/>
 
@@ -111,16 +113,16 @@ public class Colis {
 ```
 
 On fait porter à notre objet métier :
-* des aspects de stockage en base de données
-* des aspects de sérialisation
-* des aspects de documentation d'api REST
-* un peu de métier sur de la validation de format
+* Des aspects de stockage en base de données
+* Des aspects de sérialisation
+* Des aspects de documentation d'api REST
+* Un peu de métier sur de la validation de format
 
 Avec ce niveau de couplage, autant tout mettre dans le controller et ne pas se faire chier avec un découpage présentation / métier / persistance qui n'a de toute façon plus aucun sens.
 
-Dans spring (mais c'est le cas aussi dans d'autres outils, genre Quarkus), tout est fait pour avoir ce genre de pratique :
+Dans spring (mais c'est le cas aussi dans d'autres outils, genre Quarkus), tout est fait pour avoir ces genres de pratique :
 * Des annotations à gogo qui ne fonctionnent qu'avec le framework d'injection de dépendance
-* Ma sérialisation d'exception pour faire des réponses http d'api
+* La sérialisation d'exception pour faire des réponses http d'api
 * Des handlers d'exception globaux : on ne sait plus qui retourne telle erreur ou tel status http
 * ...
 
@@ -148,18 +150,19 @@ dans l'archi hexagonale, c'est domaine métier qui va imposer le format à la co
 
 À gauche, le domaine va exposer des services métiers, et la couche de présentation va se charger d'adapter ces services en http, graphql, grpc ou autres.
 
-On nomme port, les portes qui existent du domain vers l'extérieur et adapters les implémentations concrètes qui existent. Les ports sont dans la couche domaine / métier alors que les adapters ou adaptateurs sont dans la couche infrastructure.
+On nomme port, les portes qui existent entre le domaine et l'extérieur et adapters (adaptateur) les implémentations concrètes qui existent. Les ports sont dans la couche domaine / métier alors que les adapters ou adaptateurs sont dans la couche infrastructure.
+
 Les ports et adapters de la partie présentation sont dit primaire (primary), tandis que les ports et adapters de la partie accès aux données sont dit secondaire (secondary).
 
 Concrètement, le domaine ne doit pas connaître ce qui se passe gauche ni à droite. Si on traduit ça en code, il ne doit y avoir aucun import de classe provenant des couches présentation ou persistance dans le domaine !
 
 Le domaine :
-* ne doit pas savoir que c'est stocké dans postgresql, oracle, mongo...
-* ne doit pas savoir que c'est publié dans kafka, rabbitmq...
-* ne doit pas savoir que c'est éxposé en http, graphql
-* ne doit pas savoir qu'on utilise spring, quarkus, ...
-* ne doit pas savoir que c'est sérialisé en json
-* ne doit pas savoir qu'il y a un doc d'API swagger
+* Ne dois pas savoir que c'est stocké dans postgresql, oracle, mongo...
+* Ne dois pas savoir que c'est publié dans kafka, rabbitmq...
+* Ne dois pas savoir que c'est éxposé en http, graphql
+* Ne dois pas savoir qu'on utilise spring, quarkus...
+* Ne dois pas savoir que c'est sérialisé en json
+* Ne dois pas savoir qu'il y a une doc d'API swagger
 * ...
 
 Le métier peut donc se faire une place parmi les frameworks et ça, c'est positif.
@@ -181,17 +184,17 @@ Jusque-là, c'est plutôt simple, mais alors pourquoi j'entends souvent :
 
 #### Séparer l'infra et le métier ne veut pas dire vanilla
 
-Faire de l'archi hexa ne veut pas forcément dire faire du java vanilla, sans dépendances externes.
+Faire de l'archi hexa ne veut pas forcément dire faire du Java vanilla, sans dépendances externes.
 Il y a une idée qui circule sur le fait qu'on pourrait extraire la partie domaine et la faire tourner avec n'importe quel autre framework.
 
-Franchement, on s'en fout ! Déjà si, les aspects de persistance et de présentation ne viennent pas leaker dans le métier, c'est énorme et l'application sera bien plus maintenable qu'une bonne partie des applis n-tiers.
+Franchement, on s'en fout (ou pas, mais ça ne doit pas vous empêcher de commencer) ! Déjà si, les aspects de persistance et de présentation ne viennent pas leaker dans le métier, c'est énorme et l'application sera bien plus maintenable qu'une bonne partie des applis n-tiers.
 
-Vous voulez utiliser, lombok, les bean validation, vavr, commons lang ou je ne sais quoi, allez y !
+Vous voulez utiliser, lombok, les bean validation, vavr, commons lang ou je ne sais quoi, allez y ! On sera plus précautionneux avec spring par contre.
 
 #### Clean archi et archi hexa
 
 La clean archi est une sorte de version avancée de l'archi hexagonale, formalisé par Robert C. Martin.
-La vision de Robert C. Martin est plus structurée et plus rigide que la simple hexagonale mais, on n'est pas obligé d'aller jusque-là.
+La vision de Robert C. Martin est plus structurée et plus rigide que la simple archi hexagonale mais, on n'est pas obligé d'aller jusque-là.
 
 J'aurai même tendance à penser que le jargon qui est introduit : use cases, entities, adapters etc, vient prendre de la place sur le jargon métier qui devrait être prédominant dans notre application.
 
@@ -222,7 +225,7 @@ Il existe une catégorisation des ports et des adaptateurs :
 * primary : pour la partie présentation
 * secondary : pour la partie accès aux données
 
-Je trouve que faire figurer ce découpage dans l'orga du projet embrouille. J'aurai plutôt tendance à avoir un package `infrastructure` avec des sous packages `data` et `api` ou `presentation`, mais rien de plus et un package `domain`.
+Je trouve que faire figurer ce découpage dans l'orga du projet embrouille. J'aurai plutôt tendance à avoir un package `infrastructure` avec des sous packages `data` et `api` ou `presentation`, mais rien de plus. On aura un package `domain` pour le domaine.
 
 Dans `domain`, c'est comme vous voulez ! Mais je ne ferai pas figurer de package `port`, les noms des interfaces doivent être parlant et traduire le métier sous-jacent.
 
@@ -266,13 +269,13 @@ public class PriseEnChargeDeColis<Ctx> { // On a un generic qui définit notre c
 
 ### Faire quand même des mappers
 
-Il y a de fortes chances que vous ayez à faire des mapper pour passer de la couche domaine / métier à la couche infrastructure.
+Il y a de fortes chances que vous ayez à faire des mappers pour passer de la couche domaine / métier à la couche infrastructure.
 Il est potentiellement possible de s'en passer dans un premier temps (CF les chapitres suivants), mais si vous en écrivez, voici 2 solutions pour atténuer la pénibilité :
 
 #### Utiliser un assistant de code IA
 
-Quitte à utiliser une IA pour nous assister dans notre développement, autant lui faire faire les tâches relou et se garder les choses intéressantes.
-Personnellement, je ne trouve pas que coder des mapper soit particulièrement gratifiant. S'il y a bien une tâche que je pourrais confier à une IA, c'est celle-ci.
+Quitte à utiliser une IA pour nous assister dans notre développement, autant lui faire faire les tâches relous et se garder les choses intéressantes.
+Personnellement, je ne trouve pas que coder des mappers soit particulièrement gratifiant. S'il y a bien une tâche que je pourrais confier à une IA, c'est celle-ci.
 
 #### Selection verticale
 
@@ -299,7 +302,7 @@ Si c'est cet aspect qui vous pousse à ne pas faire d'archi hexa eh bien, allez 
 
 Le mieux reste cependant de s'en passer, il existe plusieurs stratégies si vous faites du spring :
 * Des classes de configuration mais, vous devrez écrire les `new` vous-même
-* Des annotations custom à faire scanner par spring, [CF la conf de Julien Topçu](https://www.youtube.com/watch?v=-dXN8wkN0yk)
+* Des annotations custom à faire scanner par spring, [CF la conférence de Julien Topçu](https://www.youtube.com/watch?v=-dXN8wkN0yk)
 * Étendre les classes du domaine et ajouter les annotations sur ces classes-là
 
 Choisissez la solution qui vous plait le plus !
@@ -312,7 +315,7 @@ Je vous propose 2 approches : utiliser la javadoc ou utiliser des wrappers
 
 #### Javadoc
 
-La lib [therapi-runtime-javadoc ](https://github.com/dnault/therapi-runtime-javadoc) propose de générer de la documentation swagger à partir de la javadoc, plutôt cool non ?
+La lib [therapi-runtime-javadoc](https://github.com/dnault/therapi-runtime-javadoc) propose de générer de la documentation swagger à partir de la javadoc, plutôt cool non ?
 
 #### Les wrapper
 
@@ -329,13 +332,13 @@ public record ColisResource(Colis colis) {
 }
 ```
 
-Avec intellij, on peut lui demander de générer les "delegates method" ce qui rend l'implémentation très facile. Ceci est très adapté pour les APIs de lecture par trop pour l'écriture, il faudra passer par un DTO et un mapper.
+Avec intellij, on peut lui demander de générer les "delegates method" ce qui rend l'implémentation très facile. Ceci est très adapté pour les APIs de lecture, pas trop pour l'écriture. Il faudra alors passer par un DTO et un mapper.
 
 ### Sérialisation json
 
 #### Wrapper
 
-Comme pour la doc, vous pouvez utiliser un mapper pour exposer votre objet du domaine en ressource REST. Même contrainte : ça n'est pas adapté pour l'écriture.
+Comme pour la doc, vous pouvez utiliser un wrapper pour exposer votre objet du domaine en ressource REST. Même contrainte : ça n'est pas adapté pour l'écriture.
 
 ```java
 @Schema(description = "Le Colis pris en charge")
@@ -351,9 +354,9 @@ public record ColisResource(Colis colis) {
 
 #### Parsing avancé
 
-Une autre solution que j'affectionne, car c'est ce que j'utilise, c'est parser le json à "la main". Pour ça, j'ai écrit cette lib : https://github.com/MAIF/functional-json/.
+Une autre solution que j'affectionne, car c'est ce que j'utilise, c'est parser le json à "la main". Pour ça, j'ai écrit cette lib : https://github.com/MAIF/functional-json/, inspiré par la lib [play-json](https://www.playframework.com/documentation/latest/JavaJson) de play framework et par ce qu'avait déjà fait Mathieu Ancelin sur [json-lib](https://github.com/ReactiveCouchbase/json-lib).
 
-Ici l'idée est de proposer des `Reader` et des `Writer` pour à respectivement lire et écrire du json. C'est en quelque sorte un mapper vers un `JsonNode` de jsckson.
+Ici l'idée est de proposer des `Reader` et des `Writer` pour à respectivement lire et écrire du json. C'est en quelque sorte un mapper vers un `JsonNode` de jackson.
 
 Par rapport à un DTO + mapper, les avantages sont les suivants :
 * plus simple de maintenir les évolutions de schéma, car il est facile de faire du fallback ou d'écrire plusieurs reader pour un même type de données.
@@ -396,7 +399,7 @@ Et ensuite pour sérialiser ou desérialiser, on fera :
 String json = "{ ... }";
 // JsonNode est une classe jackson pour représenter un json en java
 JsonNode jsonNode = Json.parse(json);
-// On desérialiser à partir de notre classe "JsonRead" :
+// On déserialiser à partir de notre classe "JsonRead" :
 JsResult<Colis> parsing = Json.fromJson(jsonNode, ColisJsonFormat.colisFormat());
 // On obtient un résultat qui est en erreur ou succès et qu'on doit gérer
 Colis colis = parsing.fold(
@@ -407,7 +410,7 @@ Colis colis = parsing.fold(
 );
 ```
 
-Dans un controller on aurait
+Dans un controller, on aurait
 
 ```java
 @PostMapping
@@ -434,7 +437,7 @@ Je ferai probablement un article dédié, mais voici des approches avec postgres
 
 #### Stockage en json
 
-Ici, c'est du plain JDBC sans autre framework, mais on peut aussi utiliser du jooq.
+Ici, c'est du plain JDBC sans autre framework, mais on peut aussi utiliser, par exemple, du jooq.
 
 Dans cet exemple, on stocke tout dans une colonne JSONB de postgresql, `insert on conflict do update` permet de faire un upsert (maintenant, il existe `merge` mais je n'ai pas testé) :
 
@@ -547,7 +550,7 @@ Dans la prise en charge de colis, on entend plutôt parler de :
 * poids / conditionnement
 * tarif
 
-Si on représente ceci par un hexagone avec à gauche l'api et à droite la spi on aurait quelque chose comme :
+Si on représente ceci par un hexagone avec à gauche l'api et à droite la spi, on aurait quelque chose comme :
 
 <img src={priseenchargedecolis} width={500}/>
 
@@ -586,7 +589,7 @@ c'est-à-dire qu'il va faire tampon et traduire le monde de la prise en charge d
 
 <img src={hive} width={700}/>
 
-On appelle ce pattern le hive pattern (on obtient une ruche), c'est Thomas Pierrain qui a officialisé ce pattern. Je vous partage ce lien vers un talk qu'il fait avec Julien Topçu, qui est très bien et beaucoup plus précis que mon explication.
+On appelle ce pattern le hive pattern (on obtient une ruche), c'est Thomas Pierrain qui a officialisé ce pattern. Je vous partage [ce lien vers un talk qu'il fait avec Julien Topçu](https://www.youtube.com/watch?v=TL_nVaOs47g), qui est très bien et beaucoup plus précis que mon explication.
 
 
 Un des intérêts de ce pattern, c'est que si le projet grossit, et qu'il devient nécessaire de par exemple éclater l'équipe en 2,
@@ -623,5 +626,5 @@ Voici quelques références sur certaines pratiques mises en évidence dans cet 
 * Sur les domaines métier et le vocabulaire, cette présentation de Grégory Weinbach est très instructive : https://www.youtube.com/watch?v=qN43Dy6fGkk
 * Sur l'archi hexagonal en java / kotlin / spring, Julien Topçu fait une bonne overview : https://www.youtube.com/watch?v=-dXN8wkN0yk
 * Sur le hive pattern, Thomas Pierrain et Julien Topçu vous présentent le pattern : https://www.youtube.com/watch?v=TL_nVaOs47g
-* Sur la délimitation des domaines Josian Chevalier et Julien Topçu (encore lui ! mais il est partout !) https://www.youtube.com/watch?v=vBmMsN83ZTk
+* Sur la délimitation des domaines Josian Chevalier et Julien Topçu (encore lui !, mais il est partout !) https://www.youtube.com/watch?v=vBmMsN83ZTk
 * Sur le context mapping, une bonne overview ici par Michael Plöd, elle est en anglais : https://www.youtube.com/watch?v=k5i4sP9q2Lk
