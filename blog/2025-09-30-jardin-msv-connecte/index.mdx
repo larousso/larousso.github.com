@@ -1,0 +1,350 @@
+---
+slug: jardin-msv-connecte
+title: Jardin MSV Connecté, mais pourquoi ?
+authors: [adelegue]
+tags: [jardin, domotique, msv]
+---
+
+import sol_carottes from './img/sol_carottes.png'
+import motoculteur from './img/motoculteur.png'
+import viedusol from './img/viedusol.png'
+import verdeterre from './img/verdeterre.png'
+import letalus1 from './img/letalus1.png'
+import letalus2 from './img/letalus2.png'
+import letalus3 from './img/letalus3.png'
+import letalus4 from './img/letalus4.png'
+import letalus5 from './img/letalus5.png'
+import letalus6 from './img/letalus6.png'
+import letalus7 from './img/letalus7.png'
+import letalus8 from './img/letalus8.png'
+import couvert from './img/couvert.png'
+import couvertpermanent from './img/couvertpermanent.png'
+import jardin from './img/jardin.jpg'
+import sonde_temperature from './img/sonde_temperature.png'
+import sonde_electrovanne from './img/sonde_electrovanne.png'
+import router_zigbee from './img/router_zigbee.png'
+import repeater from './img/repeater.png'
+import archi_zigbee from './img/archi_zigbee.png'
+
+Ça fait maintenant quelques années que je jardine, j'ai suivi quelques chaines youtubes de permaculture,
+mais cette année la chaine ver de terre production a sorti l'équivalent d'une formation de 5 jours sur le maraichage sol vivant plutôt à destination des professionnels :
+
+* https://www.youtube.com/watch?v=edjLrH_-euk
+* https://www.youtube.com/watch?v=U9qcTy6UwqY
+* https://www.youtube.com/watch?v=lzTgJXiFYMY
+
+Cette formation est animée par François Mulet, qui a mené avec son frère une exploitation MSV pendant plusieurs années tout en effectuant un certain nombre de recherches sur le sujet.
+Ses recherches s'appuient sur un mélange entre de la bibliographie sur des papiers de recherche accompagnée d'expérimentations et d'observations sur le terrain.
+
+La formation est plus qu'une formation pratique, c'est une retrospective de ses recherches avec des ouvertures sur ses travaux en cours. Un des buts de la formation est d'avoir des clés de compréhension sur le fonctionnement du sol, afin d'être en mesure de faire les bonnes analyses et de prendre les bonnes décisions pour mener ses cultures.
+
+J'ai suivi cette formation et ça a ouvert pas mal de perspectives, dont je vais vous parler.
+
+## Le labour
+
+Pour beaucoup de monde, quand on pense jardinage ou agriculture, on voit le jardinier travailler son sol à la sueur de son front, bêche à la main, retournant la terre pour planter ses graines.
+
+<img src={motoculteur} width={600}/>
+
+Le labour résout pas mal de problèmes, il permet de se débarrasser des mauvaises herbes et d'ameublir le sol. En incorporant de l'air dans le sol, on va également accélérer l'oxydation de la matière organique, ce qui va libérer des nutriments pour les plantes.
+
+Mais le problème, c'est qu'au fur et à mesure des labours, on va cramer toute la matière organique, et le sol va s'appauvrir. En s'appauvrissant, le sol va retenir moins bien l'eau, et on va se retrouver avec un sol dur, compacté, qui va être de plus en plus difficile à travailler et de plus en plus pauvre.
+Le sol sera sujet à l'érosion, il sera léssivé par les pluies, et on va se retrouver avec une terre de moins en moins fertile.
+
+Un autre effet de bord, c'est que chaque labour libère du CO2 dans l'atmosphère. A priori, 30% des émissions de CO2 sont dues à l'agriculture, et une grande partie de ces émissions sont dues au labour.
+
+Les États-Unis ont subi de plein fouet les effets du labour dans les années 30 avec le [dust bowl](https://fr.wikipedia.org/wiki/Dust_Bowl).
+
+Dans certains milieux écolo, on prône le retour des chevaux pour labourer, mais qu'on laboure avec un cheval ou un tracteur, l'effet sera le même : on va cramer la matière organique et on va appauvrir le sol.
+
+Dans l'agriculture moderne, qu'elle soit bio ou conventionnelle, le système de culture n'est pas autofertile, les plantes ne poussent pas toutes seules. On crée donc au fur et à mesure un desert.
+
+## Autofertilité naturelle
+
+Si on laisse la nature faire, ça pousse tout seul !
+
+Mais comment ça marche ?
+
+Dans une forêt, l'hiver les arbres perdent leurs feuilles, qui tombent au sol. Ces feuilles vont former une litière qui va être décomposée par la vie du sol (bactéries, champignons, vers de terre, insectes ...).
+Cette décomposition va libérer des nutriments qui vont être absorbés par les racines des plantes.
+
+Illustration avec un schéma emrpunté sur internet dont je ne connais pas l'auteur :
+<img src={viedusol} width={600}/>
+
+Le taux de matière organique va augmenter au fur et à mesure des années, et le sol va devenir de plus en plus fertile.
+
+Contrairement aux champs cultivés, le sol va s'améliorer au fil du temps.
+
+### Structure du sol
+
+La structure du sol ne va pas directement faire pousser les plantes mais, sera un bon support.
+
+Plus le taux de matière organique augmente dans le sol, plus le sol va se structurer. On va limiter l'effet de compaction et le sol absorbera mieux l'eau.
+
+Vous avez peut-être déjà vu ces genres d'images :
+
+<img src={sol_carottes} width={500}/>
+
+À gauche une carotte d'un sol sans labour et à droite une carotte d'un sol labouré.
+On voit tout de suite ce que ça peut donner lors d'un orage ou de pluies conséquentes, la terre des champs est lessivées par les pluies et tout par à la mer via les rivières.
+
+A contrario dans les forêts, lors de pluies, l'eau est filtrée par le sol, et le sol est protégé de l'érosion.
+
+Un sol bien structuré sera donc un bon support de culture. Il sera assez souple pour que les racines puissent s'y développer, et permettra une bonne retention d'eau tout en évitant l'hydromorphie.
+
+### Fertilité du sol
+
+Contrairement à l'approche conventionnelle ou la fertilité du sol est apportées par les engrais, dans le modèle MSV, c'est la vie du sol et plus particulièrement les vers de terre qui vont apporter la fertilité.
+
+En très résumé, un vers de terre va manger de la matière organique qui aura déjà été partiellement décomposée par les bactéries et champignons.
+En parcourant ses galeries, le vers de terre va tapisser les parois de sa galerie avec du mucus et du caca que les racines pourront utiliser pour se développer.
+
+<img src={verdeterre} width={400}/>
+
+Marcel Bouché, un chercheur français a étudié les vers de terre toute sa vie et, à partir de ses recherches, on sait avec une règle de 3, calculer la quantité d'azote assimilable par les plantes en fonction du nombre de vers de terre dans le sol.
+
+https://www.verdeterreprod.fr/wp-content/uploads/2022/11/BOUCHE_Vers_de_terre.pdf
+
+<object data="https://www.verdeterreprod.fr/wp-content/uploads/2022/11/BOUCHE_Vers_de_terre.pdf" type="application/pdf" width="100%" height="500px">
+    <p>Unable to display PDF file. <a href="https://www.verdeterreprod.fr/wp-content/uploads/2022/11/BOUCHE_Vers_de_terre.pdf">Download</a> instead.</p>
+</object>
+
+Il existe 3 catégories de vers de terre :
+* les vers de terre endogé : eux ne forment pas vraiment de galeries dans le sens ou ils recrachent la terre qu'ils mangent.
+* les vers de terre épigé : ils vivent à la surface du sol, ils mangent la litière et la matière organique en décomposition. Ils ne creusent pas de galeries profondes. Ils meurent si le sol est sec. Par contre, ils se reproduisent très vite.
+* les vers de terre anécique : ils creusent des galeries verticales profondes, ils mangent la litière et la matière organique en décomposition. Ils apportent de la matière organique en profondeur.
+
+Les vers de terre anéciques sont les plus intéressants pour l'agriculture, car ils apportent de la matière organique en profondeur, et permettent aux racines des plantes d'aller chercher les nutriments plus profondément.
+En épigés peuvent être intéressants dans les systèmes maraichers, car, ils se développent très vite à condition que le sol ne sèche pas, ce qui est souvent le cas dans la mesure où les systèmes maraichers sont irrigués.
+
+## Système MSV
+
+Dans le maraichage sol vivant, en général, on va apporter de la matière organique en surface, sous forme de compost, de BRF (bois raméal fragmenté), de paillage, etc.
+Cette matière organique va être décomposée par la vie du sol, et mangée par les vers de terre ce qui permettra aux plantes de pousser en se nourrisant dans les galeries du mucus produit par les vers.
+
+La bâche plastique est un outil de travail très intéressant quand on ne laboure pas. Elle permet de contrôller les mauvaises herbes et de garder l'humidité du sol.
+Quand on a un jardin, une bonne épaisseur de paille peut suffire à contrôler les mauvaises herbes.
+
+Exemple avec la ferme de Cagnolle :
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/T6cFPxLRkTs?si=O_uW-dDGa1SmhdX1" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+### Reconstruire un sol
+
+Quand on part de zéro, si le sol est pauvre avec peu de vers de terre, la stratégie est d'apporter 15 à 20 cm de matière organique et de brasser ça avec la terre sur 20 cm de profondeur.
+Ceci permettra de restructurer le sol et d'apporter de la matière organique pour les vers de terre.
+Un apport massif de matière organique non compostée va créer ce qu'on appelle une faim d'azote. Les bactéries et les champignons vont mobiliser tout l'azote disponible dans le sol pour décomposer la matière organique. Cette faim d'azote va durer 6 à 8 mois.
+
+Une fois la faim d'azote passée, il sera possible de planter, mais attention, tant que les vers de terre ne sont pas revenus, le sol ne sera pas encore assez fertile.
+Il faut compter 18 mois pour le retour des vers de terre anéciques mais on peut compter 6 mois pour le retour des vers de terre épigés, en mettant quelques vers de terre au début et en s'assurant de garde le sol humide.
+
+La maison témoin de cette pratique, [c'est le talus à marseille](https://www.youtube.com/watch?v=lzTgJXiFYMY).
+
+Dans ce projet, ils sont partis d'un terrain vague, avec un sol très pauvre avec très peu de vers de terre.
+
+Le terain avant les travaux
+<img src={letalus7} width={600}/>
+
+Etape 1 : Niveler le terrain
+
+<img src={letalus6} width={600}/>
+
+Etape 2 : Apporter de la matière organique
+<img src={letalus5} width={600}/>
+
+Après la faim d'azote, on peut planter
+<img src={letalus2} width={600}/>
+
+<img src={letalus3} width={600}/>
+
+### MSV à l'extrème
+
+Si on résume, pour créer un jardin MSV, il faut :
+* dans un premier temps restaurer le sol
+* tous les ans : un apport de matière organique
+* on garde le sol couvert en permanence (apport de MO)
+* on contrôle les mauvaises herbes avec une bâche ou du paillage
+
+On peut pousser ce système à l'extrême, c'est ce que François Mulet a fait en travaillant avec des tomatiers sous serre chauffée. L'idée était de passer d'un système hydroponique hors sol à un système MSV.
+Pour mener son projet, une règle de 3 a été faite pour savoir quelle quantité de vers de terre était nécessaire pour nourrir les plants de tomates.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/C7zZNzKU4_o?si=SzK9GSSVvy1AABDr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+Ce modèle fonctionne très bien mais, il a un énorme désavantage : il faut apporter de la matière organique chaque année.
+Il n'est donc pas autofertile.
+
+## Tendre vers l'autonomie et l'autofertilité
+
+### Couverts végétaux
+
+Une pratique qui existe, c'est d'implanter des couverts végétaux entre les cultures, par exemple l'hiver.
+Avec cette technique, on va mener une culture dont le but sera de produire de la biomasse qu'on va coucher afin de nourrir le sol.
+
+Ici un couvert de sorgho sous serre
+
+<img src={couvert} width={600}/>
+
+Pour produire la quantité nécessaire de biomasse, il faut vraiment soigner son couvert pour générer vraiment beaucoup de biomasse.
+C'est en pratique assez difficile à faire, la quantité de photosynthèse en hiver n'est pas au niveau de l'été.
+
+Yann Lopez s'est spécialisé dans cette pratique, mais ça semble encore compliqué :
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/iqXjFwumo64?si=-Rgxa57wAfE0GVzR" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+### Couvert permanent
+
+Ces 4 dernières années, François Mulet a travaillé sur un système de couvert permanent pour rendre le système autofertile.
+Plusieurs modalités ont été testées :
+
+* un témoin avec de la matière organique morte apportée chaque année
+* un double ration matière organique morte apportée chaque année
+* couvert de trèfle blanc
+* couvert de menthe
+* couvert de graminés
+* etc
+
+La quantité de matière sèche produite (tiges et feuilles de tomates) a été mesurée pour chaque modalité, ainsi que plusieurs métriques de fertilité.
+
+Dans leurs résultats, pas de différence flagrante sur le couvert de trèfles blanc, une baisse de 10 à 15% sur les modalités menthe et graminées.
+
+Mais comment ça marche ?
+
+Le principe est simple, on va planter du trèfle blanc et créer des lignes de plantation tous les 50 cm (la place pour passer une tondeuse, généralement de 40 cm de large).
+Le trèfle sera tondu régulièrement ce qui apportera de la matière organique au sol. Les exsudats racinaires du trèfle permettront aussi de nourrir le sol.
+
+Ici des concombres sur du trèfle blanc :
+<img src={couvertpermanent} width={600}/>
+
+Avec un système de couvert permanent, plus besoin d'apporter de la matière organique chaque année, le système devient autofertile.
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Yyoff5tLMwE?si=eitsM2as3zshCKyW" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+### Conduite en serre tropicale
+
+Une des autres expérimentations menées par François Mulet est la conduite en serre tropicale. L'idée est simple : humidifier l'air quand il fait chaud, mais pour quoi faire ?
+
+Un des avantages de la serre, c'est de pouvoir cultiver très tôt dans l'année.
+En contrepartie, l'été les températures peuvent être très élévées et les plantes peuvent souffrir de la chaleur.
+
+Faire monter l'humidité de l'air permet de gérer des températures plus élévées, voire même, certaines plantes poussent mieux avec de l'humidité.
+
+Dans les expérimentations menées, les cultures d'été s'en sortent à priori très bien :
+
+* tomates
+* poivrons
+* aubergines
+* concombres
+* courgettes
+* melons
+* patates douces
+
+Autre impact positif, le mildiou disparait complètement avec des températures élevées même s'il fait froid et humide la nuit.
+À plus de 35 degrés, les pucerons meurent également au bout de 2 ou 3 jours.
+
+Comment mener un serre en climat tropical ?
+
+Ce qu'on va chercher à faire, c'est avoir des températures chaudes et humides en journée et froides et sèches la nuit.
+
+Au printemps et l'automne, on va plutôt laisser la serre fermée pour faire monter la température.
+Comme les nuits sont fraiches et les journées pas toujours chaudes ou ensoleillées, il va falloir controller l'humidité.
+Par exemple ouvrir le soir pour faire baisser l'humidité, et fermer le matin pour faire monter la température.
+
+L'été, il va falloir trouver le bon niveau d'ouverture de la serre pour pouvoir garder l'humidité sans que la température monte trop haut.
+On peut garder la serre humide car, les journées étant chaudes, il n'y a pas de risque de propagation de mildiou.
+
+Pour faire monter l'humidité, c'est simple, on utilise de l'arrosage par brumisation ou aspersion.
+
+### Les itinéraires techniques
+
+Si on reprend tout, on va chercher à faire pousser des plantes dans un couvert permanent de trèfle blanc, avec une gestion serre tropicale.
+
+Pour les plantes de grande taille (tomates, poivrons, aubergines, concombres, courgettes ...) :
+* on tond le trèfle très fort pour l'affaiblir
+* on plante les plantes qui doivent déjà être bien développés
+* les rangs doivent être assez espacés pour pouvoir passer la tondeuse
+* on arrose par aspersion ou brumisation pour arroser pas seulement les plantes mais, aussi le couvert
+* le trèfle est tondu régulièrement
+* pour poivrons et aubergines, on peut fermer la serre avant de planter pour faire monter la température du sol
+
+Pour les poireaux ou oignons :
+* on plante séré car les rangs doivent être assez espacés pour pouvoir passer la tondeuse
+
+Pour les courges :
+* idem, séré sur le rang
+* espacement de 80 cm pour pouvoir tondre assez souvent au début
+* à la fain l'espace est recouvert, mais le trèfle continue de pousser dessous
+
+Pour les carottes et salades : petit challenge !
+
+Quelle que soit la culture, il faut s'assurer de garder le sol humide pour ne pas faire tomber la fertilité.
+Il y a également un petit challenge sur la conduite de la serre tropicale pour gérer l'hygrométrie en fonction des températures.
+
+
+## Et dans mon jardin ?
+
+Personnellement, je n'ai pas de grandes ambitions pour mon jardin. C'est un sujet qui me passionne mais pour lequel je n'ai pas beaucoup de temps à y consacrer.
+
+Jusqu'à présent, j'achète de la paille et je récupère du broyat et du compost à la déchetterie. Je fais du compostage de surface, c'est-à-dire que je dépose mes déchets de cuisine sous la paille à des endroits différents à chaque fois.
+
+Dans l'ensemble ça se passe pas mal, je suis autonome en sauce tomates, poireau et butternut et comme tous les jardiniers je produis très rapidement trop de courgettes.
+
+Par contre, je n'ai jamais réussi à avoir de bonnes récoltes de poivrons et aubergines, et pour les concombres ça dépend des années.
+
+<img src={jardin} width={600}/>
+
+Cette année, ça s'est pas très bien passé, j'ai eu des récoltes tardives et j'étais pas content et quand on est pas content, ça agasse et quand ça agasse ça donne envie d'agir.
+
+Pour améliorer mon jardin, j'ai décidé de mettre une serre et bien évidemment de tester le couvert permanent de trèfle blanc et la serre tropicale. Pour ça j'ai préparé une parcelle avec comme préconisé un apport de MO.
+
+Comme on l'a vu précédemment, ça nécessite un contrôle de l'humidité et de l'arrosage assez précis et donc de l'automatisation.
+
+### Le projet domotique
+
+L'idée de base, c'est de pouvoir :
+* à minima automatiser l'arrosage à interval régulier
+* conditionner l'arrosage en fonction de l'humidité du sol
+* pouvoir augmenter l'humidité de l'air en fonction de la température et de l'humidité ambiante
+
+Après quelques recherches sur la domotique (que je découvre complétement au passage), je découvre le protocol zigbee qui a l'air d'être assez utilisé, avec pas mal d'objets le supportent.
+
+À la maison, j'ai une vieille raspberry pi 1B qui traine, on va voir ce qu'elle a dans le ventre.
+
+En faisant quelques recherches, j'ai trouvé ces 2 produits qui permettent de faire ce que je veux :
+* <img src={router_zigbee} width={150}/>Le router zigbee
+* <img src={repeater} width={150}/>Un repeteur de signal pour l'extérieur
+* <img src={sonde_temperature} width={100}/>Le capteur de température et d'humidité étanche
+* <img src={sonde_electrovanne} width={100}/>La vanne d'eau
+
+Pour l'humidité du sol, toutes les sondes ont l'air merdiques, affaire à suivre ...
+
+Pour intéragir avec ces objets, zigbee2mqtt, permet de publier les données des capteurs sur un broker mqtt.
+
+ça donne le schéma suivant :
+
+<img src={archi_zigbee} width={800}/>
+
+Côté applicatif, j'ai profité de ce projet pour faire un peu de RUST. La raspberry pi 1B n'étant pas très puissante, c'est l'occasion de tester.
+
+J'écoute les messages mqtt et je stocke les données dans une base de données sqlite. Pour déclencher des actions, il faut à l'inverse publier dans le bon topic, à ce niveau-là rien de compliqué.
+
+Par contre, au niveau de l'intégration avec la raspberry pi, ça c'est avéré un peu galère.
+
+#### Cross compilation
+
+La raspberry pi 1B est en armv6, ayant fait du java toute ma vie, les histoires de target, linker, toolchain, etc, c'est très loins de mon univers.
+Je m'en suis sorti avec [cross](https://github.com/cross-rs/cross) qui permet de cross compiler facilement.
+
+#### Zigbee2mqtt
+
+J'ai tenté de faire tourner zigbee2mqtt à partir de nodejs mais ça n'a pas voulu. Bien qu'il existe des versions de nodejs non officielles pour armv6, ça n'a pas fonctionné, les scripts post install ne voulaient pas s'exécuter à priori à cause de la version de GCC.
+
+Finalement, j'ai réussi à faire tourner zigbee2mqtt en utilisant l'image docker.
+
+#### Est-ce que ça marche ?
+
+Au final ça fonctionne mais ... c'est lent, très lent, aussi rapide qu'un escargot au galop, la raspberry pi galère !
+
+En discutant avec mon poto/collègue Quentin (qui au passage fait de très bonnes [sauces pimentées](https://www.instagram.com/msqrd_sauces_piquantes/?__d=1)), j'apprends qu'il a une vieille raspberry pi 3B qui traine, en migrant dessus, ça marche !
+
+## Conclusion
+
