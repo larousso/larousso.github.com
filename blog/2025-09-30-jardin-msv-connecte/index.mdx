@@ -1,6 +1,6 @@
 ---
 slug: jardin-msv-connecte
-title: Jardin MSV Connecté, mais pourquoi ?
+title: Un jardin sur sol vivant connecté, mais pourquoi donc ?
 authors: [adelegue]
 tags: [jardin, domotique, msv]
 ---
@@ -25,6 +25,7 @@ import sonde_electrovanne from './img/sonde_electrovanne.png'
 import router_zigbee from './img/router_zigbee.png'
 import repeater from './img/repeater.png'
 import archi_zigbee from './img/archi_zigbee.png'
+import newparcel from './img/newparcel.jpeg'
 
 Ça fait maintenant quelques années que je jardine, j'ai suivi quelques chaines youtubes de permaculture,
 mais cette année la chaine ver de terre production a sorti l'équivalent d'une formation de 5 jours sur le maraichage sol vivant plutôt à destination des professionnels :
@@ -44,7 +45,7 @@ J'ai suivi cette formation et ça a ouvert pas mal de perspectives, dont je vais
 
 Pour beaucoup de monde, quand on pense jardinage ou agriculture, on voit le jardinier travailler son sol à la sueur de son front, bêche à la main, retournant la terre pour planter ses graines.
 
-<img src={motoculteur} width={600}/>
+<img alt={"Travail du sol mécanisé avec un motoculteur"} src={motoculteur} width={600}/>
 
 Le labour résout pas mal de problèmes, il permet de se débarrasser des mauvaises herbes et d'ameublir le sol. En incorporant de l'air dans le sol, on va également accélérer l'oxydation de la matière organique, ce qui va libérer des nutriments pour les plantes.
 
@@ -79,16 +80,17 @@ Contrairement aux champs cultivés, le sol va s'améliorer au fil du temps.
 
 La structure du sol ne va pas directement faire pousser les plantes mais, sera un bon support.
 
-Plus le taux de matière organique augmente dans le sol, plus le sol va se structurer. On va limiter l'effet de compaction et le sol absorbera mieux l'eau.
+Plus le taux de matière organique augmente dans le sol, plus le sol va se structurer. On va limiter l'effet de compaction et le sol absorbera mieux l'eau. Le mineral, l'argile et la matière organique vont s'agréger et former le complexe argilo-humique.
 
 Vous avez peut-être déjà vu ces genres d'images :
 
 <img src={sol_carottes} width={500}/>
 
 À gauche une carotte d'un sol sans labour et à droite une carotte d'un sol labouré.
-On voit tout de suite ce que ça peut donner lors d'un orage ou de pluies conséquentes, la terre des champs est lessivées par les pluies et tout par à la mer via les rivières.
+On voit tout de suite ce que ça peut donner lors d'un orage ou de pluies conséquentes, la terre des champs est lessivées par les pluies et tout part à la mer via les rivières.
 
-A contrario dans les forêts, lors de pluies, l'eau est filtrée par le sol, et le sol est protégé de l'érosion.
+À l'inverse un sol structuré et riche en humus agira comme une éponge, l'eau sera retenu dans le sol et les plantes pourront en profiter à posteriori.
+Dans les forêts, lors des pluies, l'eau est filtrée par le sol, elle est claire quand elle s'écoule dans les rivières ou ruisseaux.
 
 Un sol bien structuré sera donc un bon support de culture. Il sera assez souple pour que les racines puissent s'y développer, et permettra une bonne retention d'eau tout en évitant l'hydromorphie.
 
@@ -97,7 +99,7 @@ Un sol bien structuré sera donc un bon support de culture. Il sera assez souple
 Contrairement à l'approche conventionnelle ou la fertilité du sol est apportées par les engrais, dans le modèle MSV, c'est la vie du sol et plus particulièrement les vers de terre qui vont apporter la fertilité.
 
 En très résumé, un vers de terre va manger de la matière organique qui aura déjà été partiellement décomposée par les bactéries et champignons.
-En parcourant ses galeries, le vers de terre va tapisser les parois de sa galerie avec du mucus et du caca que les racines pourront utiliser pour se développer.
+En parcourant ses galeries, le vers de terre va tapisser les parois de sa galerie avec du mucus et des déjections que les racines pourront utiliser pour se développer.
 
 <img src={verdeterre} width={400}/>
 
@@ -114,13 +116,39 @@ Il existe 3 catégories de vers de terre :
 * les vers de terre épigé : ils vivent à la surface du sol, ils mangent la litière et la matière organique en décomposition. Ils ne creusent pas de galeries profondes. Ils meurent si le sol est sec. Par contre, ils se reproduisent très vite.
 * les vers de terre anécique : ils creusent des galeries verticales profondes, ils mangent la litière et la matière organique en décomposition. Ils apportent de la matière organique en profondeur.
 
-Les vers de terre anéciques sont les plus intéressants pour l'agriculture, car ils apportent de la matière organique en profondeur, et permettent aux racines des plantes d'aller chercher les nutriments plus profondément.
-En épigés peuvent être intéressants dans les systèmes maraichers, car, ils se développent très vite à condition que le sol ne sèche pas, ce qui est souvent le cas dans la mesure où les systèmes maraichers sont irrigués.
+Les vers de terre anéciques sont les plus intéressants pour le maraichage et plus généralement en agriculture. Ils apportent de la matière organique en profondeur, et permettent aux racines des plantes de se développer dans les galéries.
+Les épigés peuvent être intéressants dans les systèmes maraichers, car ils ont une grosse capacité de reproduction tant que le sol ne sèche pas. C'est souvent le cas dans les systèmes maraichers qui sont irrigués. Quand on démarre, on va pouvoir très rapidement constituer une population d'épigés.
+
+1 tonne de vers de terre par ha/an mange 25 t de matière sèche ha/an et produit 500 unités d'azote ha/an.
+
+Pour une culture pro, il faut environ 2000 unités d'azote ha/an, donc environ 4 tonnes de vers de terre par ha/an, pour 100 tonnes de matière sèche ha/an de litière.
+En gros, si on soulève une motte de terre avec une bêche, on devrait voir 10 vers de terre en situation attendue.
+
+Les bactéries fixatrices d'azote semblent également avoir un rôle important dans la fertilité des sols.
+
+### Quelle matière organique utiliser ?
+
+A priori toute matière organique, un minimum carbonnée, est bonne à prendre. Plus la matière organique est ligneuse (BRF, broyat), plus il restera de résidus après la décomposition et plus la matière est cellulosique (paille, foin) et plus le résidu sera faible.
+Il faudra donc apporter plus de matière organique ligneuse que cellulosique pour avoir le même effet.
+
+La matière cellulosique est donc un peu plus "optimale" mais tout fonctionne. Le mieux reste la matière facile à trouver.
+
+Le GCBR (Groupe de Coordination sur les Bois Raméaux) a mené des études sur plusieurs types de MO dont les résultats sont publiés ici :
+https://www.verdeterreprod.fr/publications-du-gcbr-sur-le-brf-bois-rameal-fragmente/
+
+### Et la faim d'azote ?
+
+La faim d'azote se produit lorsque de la matière organique est en cours de décomposition. Les bactéries et les champignons vont mobiliser tout ce qui est disponible pour décomposer la matière.
+Les plantes ne peuvent donc pas pousser dans ces conditions. Les feuilles sont jaunes et tout est au point mort.
+
+La bonne nouvelle, c'est que la faim d'azote se produit uniquement là où la matière se décompose. Donc si la matière organique est déposé en surface et que les plantes sont plantées dans la terre, il n'y aura aucun impact.
 
 ## Système MSV
 
-Dans le maraichage sol vivant, en général, on va apporter de la matière organique en surface, sous forme de compost, de BRF (bois raméal fragmenté), de paillage, etc.
-Cette matière organique va être décomposée par la vie du sol, et mangée par les vers de terre ce qui permettra aux plantes de pousser en se nourrisant dans les galeries du mucus produit par les vers.
+Le maraichage sol vivant exploite tous les concepts énoncés précédemment.
+
+En général, on va apporter de la matière organique en surface, sous forme de compost, de BRF (bois raméal fragmenté), de paillage, etc.
+Cette matière organique va être décomposée par la vie du sol, et mangée par les vers de terre, ce qui permettra aux plantes de pousser en se nourrissant dans les galeries du mucus produit par les vers.
 
 La bâche plastique est un outil de travail très intéressant quand on ne laboure pas. Elle permet de contrôller les mauvaises herbes et de garder l'humidité du sol.
 Quand on a un jardin, une bonne épaisseur de paille peut suffire à contrôler les mauvaises herbes.
@@ -143,19 +171,19 @@ La maison témoin de cette pratique, [c'est le talus à marseille](https://www.y
 Dans ce projet, ils sont partis d'un terrain vague, avec un sol très pauvre avec très peu de vers de terre.
 
 Le terain avant les travaux
-<img src={letalus7} width={600}/>
+<img src={letalus7} width={600} alt={"Terrain avec de la terre en très mauvais état"}/>
 
 Etape 1 : Niveler le terrain
 
-<img src={letalus6} width={600}/>
+<img src={letalus6} width={600} alt={"Le terrain est nivelé"}/>
 
 Etape 2 : Apporter de la matière organique
-<img src={letalus5} width={600}/>
+<img src={letalus5} width={600} alt={"Apport de matière organique mélangée à la terre"}/>
 
 Après la faim d'azote, on peut planter
-<img src={letalus2} width={600}/>
+<img src={letalus2} width={600} alt={"Cultures après avoir restauré le sol"}/>
 
-<img src={letalus3} width={600}/>
+<img src={letalus3} width={600} alt={"Comparaison avant / après"}/>
 
 ### MSV à l'extrème
 
@@ -182,7 +210,7 @@ Avec cette technique, on va mener une culture dont le but sera de produire de la
 
 Ici un couvert de sorgho sous serre
 
-<img src={couvert} width={600}/>
+<img src={couvert} width={600} alt={"Couvert de sorgho sous serre"}/>
 
 Pour produire la quantité nécessaire de biomasse, il faut vraiment soigner son couvert pour générer vraiment beaucoup de biomasse.
 C'est en pratique assez difficile à faire, la quantité de photosynthèse en hiver n'est pas au niveau de l'été.
@@ -193,7 +221,14 @@ Yann Lopez s'est spécialisé dans cette pratique, mais ça semble encore compli
 
 ### Couvert permanent
 
-Ces 4 dernières années, François Mulet a travaillé sur un système de couvert permanent pour rendre le système autofertile.
+Le précurseur des systèmes autofertile en couvert permanent, c'est Masanobu Fukuoka.
+En 1975, il publie "La révolution d'un seul brin de paille" ou il explique comme il cultive du riz avec un couvert de trèfle et en hiver des céréales.
+Il laisse les pailles au sol à la fin de la culture et il pratique le semi à la volée à partir de graines dans des boules d'argile.
+Il explique également comment il gère ses agrumes de façon naturelle.
+
+Malheureusement, pas grand choses sur la culture de légumes sous couvert permanent.
+
+Ces 4 dernières années, François Mulet a travaillé sur un système de couvert permanent pour rendre le système MSV autofertile.
 Plusieurs modalités ont été testées :
 
 * un témoin avec de la matière organique morte apportée chaque année
@@ -212,8 +247,8 @@ Mais comment ça marche ?
 Le principe est simple, on va planter du trèfle blanc et créer des lignes de plantation tous les 50 cm (la place pour passer une tondeuse, généralement de 40 cm de large).
 Le trèfle sera tondu régulièrement ce qui apportera de la matière organique au sol. Les exsudats racinaires du trèfle permettront aussi de nourrir le sol.
 
-Ici des concombres sur du trèfle blanc :
-<img src={couvertpermanent} width={600}/>
+Capture de concombres sur du trèfle blanc présenté dans la formation :
+<img src={couvertpermanent} width={600} alt={"Culture de concombre sous serre avec un couvert permanent de trèfle"}/>
 
 Avec un système de couvert permanent, plus besoin d'apporter de la matière organique chaque année, le système devient autofertile.
 
@@ -290,11 +325,15 @@ Dans l'ensemble ça se passe pas mal, je suis autonome en sauce tomates, poireau
 
 Par contre, je n'ai jamais réussi à avoir de bonnes récoltes de poivrons et aubergines, et pour les concombres ça dépend des années.
 
-<img src={jardin} width={600}/>
+<img src={jardin} width={600} alt={"Image de mon jardin"}/>
 
-Cette année, ça s'est pas très bien passé, j'ai eu des récoltes tardives et j'étais pas content et quand on est pas content, ça agasse et quand ça agasse ça donne envie d'agir.
+Cette année, ça ne s'est pas très bien passé, j'ai planté tard, j'ai mal arosé, j'ai eu des récoltes tardives, et j'étais pas content et quand on est pas content, ça agasse et quand ça agasse ça donne envie d'agir.
 
-Pour améliorer mon jardin, j'ai décidé de mettre une serre et bien évidemment de tester le couvert permanent de trèfle blanc et la serre tropicale. Pour ça j'ai préparé une parcelle avec comme préconisé un apport de MO.
+Pour améliorer mon jardin, j'ai décidé de mettre une serre pour le printemps prochain et bien évidemment de tester le couvert permanent de trèfle blanc et la serre tropicale (vous ne l'aviez pas vu venir dis donc). Pour ça j'ai préparé une parcelle avec comme préconisé un apport de MO. Ma terre n'est pas argileuse, je ne crains pas la compaction, en revanche, elle est calcaire et très pauvre en matière organique et aucun ver de terre.
+
+<img src={newparcel} width={600} alt={"Nouvelle parcelle en cours de restauration"}/>
+
+Je mettrai la serre et le système d'arrosage en place à la fin de l'hiver.
 
 Comme on l'a vu précédemment, ça nécessite un contrôle de l'humidité et de l'arrosage assez précis et donc de l'automatisation.
 
@@ -310,10 +349,10 @@ Après quelques recherches sur la domotique (que je découvre complétement au p
 À la maison, j'ai une vieille raspberry pi 1B qui traine, on va voir ce qu'elle a dans le ventre.
 
 En faisant quelques recherches, j'ai trouvé ces 2 produits qui permettent de faire ce que je veux :
-* <img src={router_zigbee} width={150}/>Le router zigbee
-* <img src={repeater} width={150}/>Un repeteur de signal pour l'extérieur
-* <img src={sonde_temperature} width={100}/>Le capteur de température et d'humidité étanche
-* <img src={sonde_electrovanne} width={100}/>La vanne d'eau
+* <img alt={"Router zigbee"} src={router_zigbee} width={150}/>Le router zigbee
+* <img alt={"Repeteur de signal sigbee"} src={repeater} width={150}/>Un repeteur de signal pour l'extérieur
+* <img alt={"Sonde de température zigbee"} src={sonde_temperature} width={100}/>Le capteur de température et d'humidité étanche
+* <img alt={"Electrovanne zigbee"} src={sonde_electrovanne} width={100}/>La vanne d'eau
 
 Pour l'humidité du sol, toutes les sondes ont l'air merdiques, affaire à suivre ...
 
@@ -321,7 +360,7 @@ Pour intéragir avec ces objets, zigbee2mqtt, permet de publier les données des
 
 ça donne le schéma suivant :
 
-<img src={archi_zigbee} width={800}/>
+<img alt={"Schéma d'architecture représentant les composante zigbee et leurs interactions"} src={archi_zigbee} width={800}/>
 
 Côté applicatif, j'ai profité de ce projet pour faire un peu de RUST. La raspberry pi 1B n'étant pas très puissante, c'est l'occasion de tester.
 
@@ -346,5 +385,13 @@ Au final ça fonctionne mais ... c'est lent, très lent, aussi rapide qu'un esca
 
 En discutant avec mon poto/collègue Quentin (qui au passage fait de très bonnes [sauces pimentées](https://www.instagram.com/msqrd_sauces_piquantes/?__d=1)), j'apprends qu'il a une vieille raspberry pi 3B qui traine, en migrant dessus, ça marche !
 
+Les températures remontent correctement et je peux piloter l'arrosage à distance !
+
 ## Conclusion
 
+Cet article assez long était bien évidemment un prétexte pour parler de jardinage !
+
+Contrairement à l'approche traditionnelle, en MSV on soigne son sol et non les plantes. Pas besoin de technologie complexe à ce niveau-là. On ne joue pas les petits chimistes, on laisse la nature faire. Au premier abord, la cohabitation avec l'informatique ne semble pas évidente.
+Et pourtant, on peut aider un peu améliorer le système en optimisant les conditions.
+
+Maintenant, il reste à voir si tout ça va fonctionner correctement, la réponse l'année prochaine !
