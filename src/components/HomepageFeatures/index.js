@@ -6,7 +6,8 @@ import Link from "@docusaurus/Link";
 const FeatureList = [
   {
     title: 'Recettes',
-    Img: 'img/ramen5.png',
+    Img: 'img/ramen6.png',
+    width: '400px',
     Link: 'docs/intro',
     description: (
       <>
@@ -16,7 +17,7 @@ const FeatureList = [
   },
   {
     title: 'Article tech',
-    Img: 'img/dev4.png',
+    Img: 'img/oldcomputer.png',
     Link: 'blog',
     description: (
       <>
@@ -26,12 +27,12 @@ const FeatureList = [
   }
 ];
 
-function Feature({Img, Link, title, description}) {
+function Feature({Img, width, Link, title, description}) {
   return (
     <div className={clsx('col col--6')}>
         <a href={Link} >
           <div className="text--center">
-              <img src={Img} />
+              <img src={Img} width={width}/>
           </div>
         </a>
       <div className="text--center padding-horiz--md">
