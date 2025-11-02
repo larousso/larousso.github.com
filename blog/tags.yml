@@ -43,3 +43,23 @@ postgresql:
   label: Postgresql
   permalink: /postgresql
   description: Postgresql
+
+jardin:
+  label: Jardin
+  permalink: /jardin
+  description: Jardin
+
+domotique:
+  label: Domotique
+  permalink: /domotique
+  description: Domotique
+
+msv:
+  label: MSV
+  permalink: /msv
+  description: MSV
+
+agilite:
+  label: Agilité
+  permalink: /agilite
+  description: Agilité
