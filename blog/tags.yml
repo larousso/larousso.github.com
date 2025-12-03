@@ -63,3 +63,8 @@ agilite:
   label: Agilité
   permalink: /agilite
   description: Agilité
+
+team:
+  label: Esprit d'équipe
+  permalink: /team
+  description: L'ésprit d'équipe c'est important
